@@ -1,0 +1,32 @@
+spec:
+  applicationsNamespace: opendatahub
+  monitoring:
+    managementState: Managed
+    namespace: opendatahub
+  serviceMesh:
+    auth:
+      audiences:
+        - 'https://rh-oidc.s3.us-east-1.amazonaws.com/23c734st3pn7l167mq97d0ot8848lgrl'
+    controlPlane:
+      metricsCollection: Istio
+      name: data-science-smcp
+      namespace: istio-system
+    managementState: Managed
+  trustedCABundle:
+    customCABundle: |
+      -----BEGIN CERTIFICATE-----
+      MIICQTCCAeagAwIBAgIQXJOmpgo7JM36Fp8sIvc4BTAKBggqhkjOPQQDAjBcMRww
+      GgYDVQQKExNDZXJ0Z2VuIERldmVsb3BtZW50MTwwOgYDVQQLDDNmc3BvbHRpQEZp
+      bGlwcGVzLU1hY0Jvb2stUHJvLmxvY2FsIChGaWxpcHBlIFNwb2x0aSkwHhcNMjQx
+      MTEzMTkxMTE0WhcNMjUxMTEzMTkxMTE0WjBcMRwwGgYDVQQKExNDZXJ0Z2VuIERl
+      dmVsb3BtZW50MTwwOgYDVQQLDDNmc3BvbHRpQEZpbGlwcGVzLU1hY0Jvb2stUHJv
+      LmxvY2FsIChGaWxpcHBlIFNwb2x0aSkwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNC
+      AARNh4p2+XI9CDSp6uOL4h90+G6T9KLO45otNGcg+L7aonLFl4mQUo2DPAwWp4+G
+      YUWsecNkJarCvqeUDwBrEZGgo4GJMIGGMA4GA1UdDwEB/wQEAwICpDATBgNVHSUE
+      DDAKBggrBgEFBQcDATAPBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBSANfVh7LOO
+      ml2j+Vbpxo3ibYgX6TAvBgNVHREEKDAmgglsb2NhbGhvc3SCE21pbmlvLSouZXhh
+      bXBsZS5uZXSHBApYADYwCgYIKoZIzj0EAwIDSQAwRgIhAKSRFcghgMmO/gWJF4j4
+      agXfMsdO4UeQbp5ZX2jdPi6dAiEArRPIrR4XxZXZBOCPc625YJYP8oxuCkswkaHC
+      kBJ3e/w=
+      -----END CERTIFICATE-----
+    managementState: Managed

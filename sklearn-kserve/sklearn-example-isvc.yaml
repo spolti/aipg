@@ -1,0 +1,57 @@
+# apiVersion: serving.kserve.io/v1beta1
+# kind: InferenceService
+# metadata:
+#   name: sklearn-example
+# spec:
+#   predictor:
+#     model:
+#       runtime: mlserver-1.x
+#       protocolVersion: grpc-v2
+#       modelFormat:
+#         name: sklearn
+#       storage:
+#         key: localMinIO
+#         path: sklearn/mnist-svm.joblib
+#         parameters:
+#           bucket: modelmesh-example-models
+#---
+# apiVersion: serving.kserve.io/v1beta1
+# kind: InferenceService
+# metadata:
+#   name: example-onnx-mnist
+# spec:
+#   predictor:
+#     model:
+#       modelFormat:
+#         name: onnx
+#       runtime: ovms-1.x
+#       storage:
+#         key: localMinIO
+#         path: onnx/mnist.onnx
+---
+# apiVersion: "serving.kserve.io/v1beta1"
+# kind: "InferenceService"
+# metadata:
+#   name: "sklearn-iris"
+# spec:
+#   predictor:
+#     model:
+#       runtime: mlserver-1.x
+#       protocolVersion: v2
+#       modelFormat:
+#         name: sklearn
+#       storageUri: "gs://kfserving-examples/models/sklearn/1.0/model"
+apiVersion: "serving.kserve.io/v1beta1"
+kind: "InferenceService"
+metadata:
+  name: "sklearn-iris-instance-2"
+  annotations:
+    serving.kserve.io/deploymentMode: "Serverless"
+spec:
+  predictor:
+    model:
+      runtime: kserve-mlserver
+      # protocolVersion: v2
+      modelFormat:
+        name: sklearn
+      storageUri: "gs://kfserving-examples/models/sklearn/1.0/model"

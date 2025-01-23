@@ -1,0 +1,18 @@
+apiVersion: "serving.kserve.io/v1beta1"
+kind: "InferenceService"
+metadata:
+  name: "sklearn-iris"
+spec:
+  predictor:
+    model:
+      runtime: kserve-mlserver
+      modelFormat:
+        name: sklearn
+      storageUri: "gs://kfserving-examples/models/sklearn/1.0/model"
+      volumeMounts:
+        - name: my-dynamic-volume
+          mountPath: /tmp/data
+    volumes:
+      - name: my-dynamic-volume
+        persistentVolumeClaim:
+          claimName: my-dynamic-pvc-read-only

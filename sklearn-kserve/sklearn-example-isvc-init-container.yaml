@@ -1,0 +1,23 @@
+apiVersion: "serving.kserve.io/v1beta1"
+kind: "InferenceService"
+metadata:
+  name: "sklearn-iris"
+spec:
+  predictor:
+    volumes:
+      - emptyDir: { }
+        name: shared-data
+    initContainers:
+      - image: docker.myorg.com/data-mlplatform/utils/secret-loader:latest
+        name: secrets-loader
+        volumeMounts:
+          - mountPath: /secrets
+            name: shared-data
+        command: [ 'sh',
+                   '-c',
+                   'date > /secrets/my-value' ]
+    model:
+      runtime: kserve-mlserver
+      modelFormat:
+        name: sklearn
+      storageUri: "gs://kfserving-examples/models/sklearn/1.0/model"

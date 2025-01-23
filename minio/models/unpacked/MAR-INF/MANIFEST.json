@@ -1,0 +1,12 @@
+{
+  "createdOn": "28/07/2020 03:17:10",
+  "runtime": "python",
+  "model": {
+    "modelName": "mnist_v2",
+    "serializedFile": "mnist_cnn.pt",
+    "handler": "mnist_handler.py",
+    "modelFile": "mnist.py",
+    "modelVersion": "2.0"
+  },
+  "archiverVersion": "0.2.0"
+}

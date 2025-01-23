@@ -1,0 +1,78 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio
+  annotations:
+    service.beta.openshift.io/serving-cert-secret-name: minio-tls
+spec:
+  ports:
+    - name: minio-client-port
+      port: 9000
+      protocol: TCP
+      targetPort: 9000
+  selector:
+    app: minio
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: minio
+  name: minio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minio
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      containers:
+        - args:
+            - server
+            # - /data
+            - /data1
+            # - -S
+            # - /opt/minio/certs
+          env:
+            - name: MINIO_ACCESS_KEY
+              value: AKIAIOSFODNN7EXAMPLE
+            - name: MINIO_SECRET_KEY
+              value: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+            - name: MCS_MINIO_SERVER_TLS_ROOT_CAS
+              value: /opt/minio/certs/public.crt  
+          # image: quay.io/cloudservices/minio:latest
+          image: quay.io/spolti/minio:latest
+          imagePullPolicy: Always
+          # image: quay.io/opendatahub/modelmesh-minio-examples:latest
+          name: minio
+      #     volumeMounts:
+      #       - name: minio-tls
+      #         mountPath: /data1/minio/cert
+      #         readOnly: true
+      # volumes:
+      #   - name: minio-tls
+      #     secret:
+      #       secretName: minio-tls
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: storage-config
+stringData:
+  localMinIO: |
+    {
+      "type": "s3",
+      "access_key_id": "AKIAIOSFODNN7EXAMPLE",
+      "secret_access_key": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+      "endpoint_url": "https://minio:9000",
+      "default_bucket": "us-south",
+      "region": "us-south",
+      "verify_ssl": "1",
+      "cabundle_configmap": "odh-kserve-custom-ca-bundle",
+      "ca_bundle": "/etc/ssl/custom-certs/cabundle.crt"
+    }
+    

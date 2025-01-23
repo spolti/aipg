@@ -1,0 +1,13 @@
+apiVersion: "serving.kserve.io/v1beta1"
+kind: "InferenceService"
+metadata:
+  name: "mnist-v2"
+  annotations:
+    serving.kserve.io/deploymentMode: ModelMesh
+spec:
+  predictor:
+    model:
+      modelFormat:
+        name: pytorch-mar
+      protocolVersion: v2  
+      storageUri: gs://kfserving-examples/models/torchserve/image_classifier/v2

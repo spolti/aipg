@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-dynamic-pvc-read-only
+spec:
+  accessModes:
+    - ReadOnlyMany
+  #storageClassName: standard  # keep commented to use your cluster's default storage class
+  resources:
+    requests:
+      storage: 1Gi

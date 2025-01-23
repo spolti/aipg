@@ -1,0 +1,20 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: example-pythorch
+  annotations:
+    serving.kserve.io/deploymentMode: ModelMesh
+    serving.kserve.io/secretKey: localMinIO
+spec:
+  serviceAccountName: my-custom-sa
+  predictor:
+    replicas: 1
+    model:
+      modelFormat:
+        name: pytorch-mar
+      protocolVersion: v2  
+      storage:
+        key: localMinIO
+        path: pytorch/mnist.mar
+
+# deployed moden name is not fixed: can be checked in the torhserve logs

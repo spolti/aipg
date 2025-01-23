@@ -1,0 +1,77 @@
+# FROM quay.io/opendatahub/modelmesh-minio-examples:latest
+FROM quay.io/spolti/minio:latest
+
+# structure of /data1/modelmesh-example-models"
+# drwxrwxr-x. 1 modelmesh root 17 May  2 18:34 .
+# drwxrwxr-x. 1 modelmesh root 38 Aug 15  2023 ..
+# drwxr-xr-x. 1 modelmesh root 21 May  2 18:34 fvt
+# drwxr-xr-x. 2 modelmesh root 22 Aug 15  2023 keras
+# drwxr-xr-x. 3 modelmesh root 46 May  2 18:34 lightgbm
+# drwxr-xr-x. 3 modelmesh root 20 May  2 18:31 llm
+# drwxr-xr-x. 3 modelmesh root 62 May  2 18:34 onnx
+# drwxr-xr-x. 3 modelmesh root 19 May  2 18:34 pytorch
+# drwxr-xr-x. 2 modelmesh root 30 May  2 18:34 sklearn
+# drwxr-xr-x. 1 modelmesh root 30 May  2 18:34 tensorflow
+# drwxr-xr-x. 3 modelmesh root 47 May  2 18:34 xgboost
+
+ENV BASE_DIR="/data1/modelmesh-example-models"
+RUN ls -lah ${BASE_DIR}
+
+# copy the models to the desired path
+# COPY models/* ${BASE_DIR}/pytorch
+
+# apply the correct permissions to the added model
+# if it is a dir, grant full dir permissions to modelmesh user
+# USER root
+# RUN chown 1000:0 ${BASE_DIR}/pytorch/mnist.mar
+
+# RUN ls -lah ${BASE_DIR}/pytorch
+
+# RUN mkdir -p ${BASE_DIR}/openvino/mnist/1
+
+# RUN cp -r ${BASE_DIR}/fvt/openvino/mnist/* ${BASE_DIR}/openvino/mnist/1/
+
+# RUN ls -la ${BASE_DIR}/openvino/mnist/1
+USER root
+
+RUN mkdir -p /opt/minio/certs
+
+COPY with-ssl/certs/private.key /opt/minio/certs/
+COPY with-ssl/certs/public.crt /opt/minio/certs/
+#
+RUN ls /opt/minio/certs/
+
+RUN chown -R 1000:0 /opt/minio/certs/
+RUN chmod -R 777 /opt/minio/certs/
+
+USER 1000
+
+# kubectl run -i --tty busybox --image=registry.access.redhat.com/rhel7/rhel-tools --restart=Never --overrides='
+# {
+#   "apiVersion": "v1",
+#   "spec": {
+#     "containers": [
+#       {
+#         "name": "busybox",
+#         "image": "registry.access.redhat.com/rhel7/rhel-tools",
+#         "stdin": true,
+#         "tty": true,
+#         "command": ["sh"],
+#         "volumeMounts": [
+#           {
+#             "name": "secret-volume",
+#             "mountPath": "/etc/secret"
+#           }
+#         ]
+#       }
+#     ],
+#     "volumes": [
+#       {
+#         "name": "secret-volume",
+#         "secret": {
+#           "secretName": "minio-tls"
+#         }
+#       }
+#     ]
+#   }
+# }' 

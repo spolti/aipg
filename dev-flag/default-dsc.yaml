@@ -1,0 +1,35 @@
+spec:
+  components:
+    codeflare:
+      managementState: Removed
+    kserve:
+      devFlags:
+        manifests:
+          - contextDir: config
+            sourcePath: ''
+            uri: 'https://github.com/spolti/kserve/tarball/test1234'
+          - contextDir: config
+            sourcePath: ''
+            uri: 'https://github.com/spolti/odh-model-controller/tarball/test1234'          
+      managementState: Managed
+      serving:
+        ingressGateway:
+          certificate:
+            secretName: knative-serving-cert
+            type: SelfSigned
+        managementState: Managed
+        name: knative-serving
+    trustyai:
+      managementState: Removed
+    ray:
+      managementState: Removed
+    kueue:
+      managementState: Removed
+    workbenches:
+      managementState: Managed
+    dashboard:
+      managementState: Managed
+    modelmeshserving:
+      managementState: Removed
+    datasciencepipelines:
+      managementState: Removed

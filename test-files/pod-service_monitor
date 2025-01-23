@@ -1,0 +1,126 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: istiod-monitor
+spec:
+  targetLabels:
+  - app
+  selector:
+    matchLabels:
+      istio: pilot
+  endpoints:
+  - port: http-monitoring
+    interval: 30s
+    relabelings:
+    - action: replace
+      replacement: "data-science-smcp-istio-system"
+      targetLabel: mesh_id
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: istio-proxies-monitor
+spec:
+  selector:
+    matchExpressions:
+    - key: istio-prometheus-ignore
+      operator: DoesNotExist
+  podMetricsEndpoints:
+  - path: /stats/prometheus
+    interval: 30s
+    relabelings:
+    - action: keep
+      sourceLabels: [__meta_kubernetes_pod_container_name]
+      regex: "istio-proxy"
+    - action: keep
+      sourceLabels: [__meta_kubernetes_pod_annotationpresent_prometheus_io_scrape]
+    - action: replace
+      regex: (\d+);(([A-Fa-f0-9]{1,4}::?){1,7}[A-Fa-f0-9]{1,4})
+      replacement: '[$2]:$1'
+      sourceLabels: [__meta_kubernetes_pod_annotation_prometheus_io_port,
+      __meta_kubernetes_pod_ip]
+      targetLabel: __address__
+    - action: replace
+      regex: (\d+);((([0-9]+?)(\.|$)){4})
+      replacement: $2:$1
+      sourceLabels: [__meta_kubernetes_pod_annotation_prometheus_io_port,
+      __meta_kubernetes_pod_ip]
+      targetLabel: __address__
+    - action: labeldrop
+      regex: "__meta_kubernetes_pod_label_(.+)"
+    - sourceLabels: [__meta_kubernetes_namespace]
+      action: replace
+      targetLabel: namespace
+    - sourceLabels: [__meta_kubernetes_pod_name]
+      action: replace
+      targetLabel: pod_name
+
+    - action: replace
+      replacement: "data-science-smcp-istio-system"
+      targetLabel: mesh_id
+
+
+# apiVersion: dscinitialization.opendatahub.io/v1
+# kind: DSCInitialization
+# spec:
+#   applicationsNamespace: redhat-ods-applications
+#   monitoring:
+#     managementState: Managed
+#     namespace: redhat-ods-monitoring
+#   serviceMesh:
+#     controlPlane:
+#       metricsCollection: Istio
+#       name: data-science-smcp
+#       namespace: istio-system
+#     managementState: Managed
+#   trustedCABundle:
+#     customCABundle: ''
+#     managementState: Managed
+
+
+# kserve_metrics_servicemonitor_reconciler -> modify create DesiredResource to return nil so that existing ones are deleted and no new ones are created. -- OK
+# kserve_metrics_service_reconciler -> modify create DesiredResource to return nil so that existing ones are deleted and no new ones are created. -- OK
+# kserve_istio_peerauthentication_reconciler -> modify create DesiredResource to return nil so that existing ones are deleted and no new ones are created. -- OK
+# kserve_istio_podmonitor_reconciler -> modify the created resource to match the new spec -- need to test
+# kserve_istio_servicemonitor_reconciler -> modify the created resource to match the new spec -- need to test
+
+
+
+    # [RHOAIENG-6264] - Ensure Metrics work in vLLM
+    
+    # chore:  Make sure that the vLLM metrics are getting correctly exposed when the
+    #         prometheus annotations are set.
+    #         Indirect fixes RHOAIENG-4804.
+    
+    # Signed-off-by: Spolti <fspolti@redhat.com>
+# spec:
+#   components:
+#     codeflare:
+#       managementState: Removed
+#     kserve:
+#       devFlags:
+#         manifests:
+#           - contextDir: config
+#             sourcePath: ''
+#             uri: 'https://github.com/spolti/odh-model-controller/tarball/RHOAIENG-6264'
+#       managementState: Managed
+#       serving:
+#         ingressGateway:
+#           certificate:
+#             type: SelfSigned
+#         managementState: Managed
+#         name: knative-serving
+#     trustyai:
+#       managementState: Removed
+#     ray:
+#       managementState: Removed
+#     kueue:
+#       managementState: Removed
+#     workbenches:
+#       managementState: Removed
+#     dashboard:
+#       managementState: Removed
+#     modelmeshserving:
+#       managementState: Removed
+#     datasciencepipelines:
+#       managementState: Removed

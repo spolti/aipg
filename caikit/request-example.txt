@@ -1,0 +1,2 @@
+curl --insecure -X POST https://caikit-3-fspolti.apps.rosa.hannah-kserve.7cma.p3.openshiftapps.com/api/v1/task/text-generation \ 
+-H "Content-Type: application/json" -d '{"model_id":"flan-t5-small-caikit","inputs": "At what temperature does liquid Nitrogen boil?"}'
