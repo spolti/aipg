@@ -8,9 +8,17 @@ spec:
       modelFormat:
         name: vLLM
       runtime: vllm-runtime
-      storageUri: quay.io/spolti/granite-3.1-8b:instruct
+      storageUri: oci://quay.io/spolti/granite-3.1-8b:instruct
       args:
-        - --dtype=half
+        - --dtype=auto
+        # If you get The model's max seq len (131072) is larger than the maximum number of tokens that can be stored in KV cache (26016).
+        # try this, you might get out of memory errors, try to adjust the memory utilization
+        # The GPU used on this test has 24GB of memory
+        - --max-model-len=20000
+        - --gpu-memory-utilization=0.95
+        - --enable-chunked-prefill
+        # if it not work, try to disable the K/V cache
+        # - --disable-kv-cache
       resources:
         limits:
           nvidia.com/gpu: 1

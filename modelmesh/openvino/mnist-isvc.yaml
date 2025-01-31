@@ -10,6 +10,7 @@ spec:
       modelFormat:
         name: onnx
       runtime: ovms-1.x
+      # this model can be downloaded by deploying the minio from this repo.
       storage:
         key: localMinIO
         path: onnx/mnist.onnx

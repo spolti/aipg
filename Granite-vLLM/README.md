@@ -140,7 +140,7 @@ Use this command to install the Serving Runtime:
 
 ```bash
 oc new-project granite
-oc apply -f serving-runtime.yaml
+oc process -n opendatahub -o yaml vllm-runtime-template | oc apply -f -
 ```
 
 Check if it was installed:
@@ -165,12 +165,12 @@ As first step, make sure the OCI feature is enabled (it should be enabled by def
 ...
         "enableModelcar": true
 ```
-
+It will print some other content, but the last line is the important one, that should be `true`.
 
 Now, let's prepare the OCI image by creating a image. This is a multistep container that will download the model and copy to the OCI container. Inspect the [Containerfile](Containerfile)
 
 ```
-podman build --format=oci --squash \
+podman build --format=oci --arch x86_64 --squash \
   --build-arg repo_id=ibm-granite/granite-3.1-8b-instruct \
   -t quay.io/spolti/granite-3.1-8b:instruct .
 ```
@@ -180,6 +180,22 @@ Remember to update the registry address to fir your needs.
 Then push it to your preferred registry.
 
 **Tip**: If the registry requires auth, there is a neew to configure a pull secret.
+Example:
+```bash
+oc create secret docker-registry quay-pull-secret \
+  --docker-server=quay.io \
+  --docker-username=<your-quay-username> \
+  --docker-password=<your-quay-password> \
+  --docker-email=<your-email>
+
+# Link the Secret to Your Service Account
+oc secrets link default quay-pull-secret --for=pull 
+
+# Verify the Secret is Linked
+oc get serviceaccount default -o yaml
+```
+
+> Remember to update the `serviceaccount` name to match your needs.
 
 
 ## Deploying the Inference Service
@@ -192,10 +208,58 @@ Use [inference service](inference-service.yaml) to deploy it.
 oc apply -f inference-service.yaml
 ```
 
-**Tip:** If you used a different example image, update the yaml to reflet it.
+**Tip:** If you used a different example image, update the yaml to reflect it.
 
-Once it is deployed check if the isvc is ready.
+Check the deployment status:
+```bash
+oc get pods -n granite --watch
+NAME                                                      READY   STATUS     RESTARTS   AGE
+granite318b-predictor-00001-deployment-66b9d596bf-zsnhx   0/3     Init:0/1   0          2m26s
+```
+Wait until it gets ready, this might take a while since the model is a little bit large.
+If for some reason the status don't change to `Init:0/1` and stays on `Pending`, check out the events for possible hints:
+```bash
+oc get events -n granite
+```
+
+
+Once ready, try to inference it
 
 ```bash
+ISVC_HOST=$(oc get inferenceservice granite318b -o jsonpath='{.status.url}' -n granite | cut -d "/" -f 3)
+curl -s https://$ISVC_HOST/v1/completions \
+      -H "Content-Type: application/json" \
+      -d '{
+          "model": "granite318b",
+          "prompt": "What is the IBM granite-3 model?",
+          "max_tokens": 200,
+          "temperature": 0.8
+      }' | jq
+```
+> Note: If you get `jq: command not found` remove it with the `|` character, or install it.
 
+The response would be something like:
+```yaml
+{
+  "id": "cmpl-852db834-861e-4643-89bf-45a6c6fafb00",
+  "object": "text_completion",
+  "created": 1738342575,
+  "model": "granite318b",
+  "choices": [
+    {
+      "index": 0,
+      "text": "\n\nThe IBM granite-3 model is a language model developed by IBM Research. It is designed to understand and generate human-like text based on the input it receives. It is trained on a diverse range of internet text, and it can be used for a variety of natural language processing tasks, such as text summarization, question answering, and dialogue generation. The model is called \"granite-3\" because it is the third version of the IBM Granite series of language models. The previous versions, Granite-1 and Granite-2, were also developed by IBM Research. The IBM granite-3 model is not available for public use, and it is used internally by IBM for research and development purposes.",
+      "logprobs": null,
+      "finish_reason": "stop",
+      "stop_reason": null,
+      "prompt_logprobs": null
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 10,
+    "total_tokens": 164,
+    "completion_tokens": 154,
+    "prompt_tokens_details": null
+  }
+}
 ```
