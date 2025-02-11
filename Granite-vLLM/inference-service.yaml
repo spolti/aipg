@@ -2,6 +2,8 @@ apiVersion: serving.kserve.io/v1beta1
 kind: InferenceService
 metadata:
   name: granite318b
+  annotations:
+    sidecar.istio.io/inject: "true"
 spec:
   predictor:
     model:
