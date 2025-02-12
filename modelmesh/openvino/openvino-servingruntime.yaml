@@ -24,9 +24,9 @@ spec:
   grpcDataEndpoint: "port:8001"
 
   containers:
-    - name: kserve-container
-    #- name: ovms
-      image: quay.io/modh/openvino_model_server:rhoai-2.13-944744e
+    # - name: kserve-container
+    - name: ovms
+      image: quay.io/modh/openvino_model_server:rhoai-2.16-d538a5f
       args:
         - --port=8001
         - --rest_port=8888
