@@ -1,20 +1,34 @@
+# Deploy mnist on OpenVino Serving Runtime
 
-secure:
-> this token is obtained from openShift Cluster, at this point it is n
-TOKEN="${SA_TOKEN}"
+```bash
+oc new-project mnist
+```
 
-curl --insecure -X POST -H "Authorization: Bearer $TOKEN" https://mnist-test-authorino.apps.rosa.spolti.vqoo.p3.openshiftapps.com/v2/models/mnist/versions/1/infer -d @request-kserve.json       
-
-
-insecure:
-curl --insecure -X POST  https://mnist-test-authorino.apps.rosa.spolti.vqoo.p3.openshiftapps.com/v2/models/mnist/versions/1/infer -d @request-kserve.json
-curl --insecure -X POST  https://mnist-test-authorino.apps.rosa.spolti.vqoo.p3.openshiftapps.com/v2/models/mnist/infer -d @request-kserve.json   
-curl --insecure -X POST  https://mnist-test-authorino.apps.rosa.spolti.vqoo.p3.openshiftapps.com/v2/models/mnist:predict -d @request-kserve.json   
-curl --insecure https://mnist-test-authorino.apps.rosa.spolti.vqoo.p3.openshiftapps.com/v2/models/mnist/ready
-
-curl --insecure https://mnist-test-authorino.apps.rosa.spolti.vqoo.p3.openshiftapps.com/v1/models/noauth/ready
+Before moving forward, install the MinIO to serve the model, it can be quickly done by the following command:
+```bash
+oc apply -f ../minio/minio.yaml
+```
 
 
-v2/models/resnet/ready
+Deploy the Serving Runtime
+```bash
+oc apply -f openvino-serving-runtime.yaml
+```
 
-curl --insecure -X POST  https://mnist-test-authorino.apps.rosa.spolti.vqoo.p3.openshiftapps.com/v2/models/mnist/versions/1/infer -d @request-kserve.json
+Deploy the model
+```bash
+oc apply -f mnist-isvc.yaml
+```
+
+To get the URL and path:
+```bash
+oc get route example-onnx-mnist -ojsonpath='{.spec.host}'
+oc get route example-onnx-mnist  -ojsonpath='{.spec.path}'
+```
+
+
+Test your model with:
+```bash
+X=30 ./run-request.sh <model_url>
+```
+

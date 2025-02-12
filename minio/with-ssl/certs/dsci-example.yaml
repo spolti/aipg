@@ -6,7 +6,7 @@ spec:
   serviceMesh:
     auth:
       audiences:
-        - 'https://rh-oidc.s3.us-east-1.amazonaws.com/23c734st3pn7l167mq97d0ot8848lgrl'
+        - 'replace with your audience provider'
     controlPlane:
       metricsCollection: Istio
       name: data-science-smcp

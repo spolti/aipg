@@ -38,9 +38,7 @@ spec:
               value: AKIAIOSFODNN7EXAMPLE
             - name: MINIO_SECRET_KEY
               value: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-          # image: quay.io/cloudservices/minio:latest
           image: quay.io/spolti/minio:latest
-          # image: quay.io/opendatahub/modelmesh-minio-examples:latest
           name: minio
 ---
 apiVersion: v1
