@@ -27,3 +27,9 @@ To apply the DevFlag configuration, use the following command:
 
 ```bash
 oc apply -f default-dsc.yaml
+```
+
+
+> Note that, if the DevFlag is `modelmesh-serving` used to override the manifests, make sure that your branch is named as
+> `model-mesh` or `modelmeshserving`, there is a bug in the Opendatahub operator that only considers reads the git repository
+> is one of these strings are present in the URI.

@@ -3,7 +3,7 @@
 This example aims to provide a quick how-to guide about getting the most impoortant metrics related to GPU consumption when using Large Language Models.
 At this point, it is assumer that you already have Red Hat OpenShift AI running and some LLM model deployed.
 
-You can follow the steps described in the [Granite-vLLM](../Granite-vLLM/) directory.
+You can follow the steps described in the [Granite-vLLM](../../Granite-vLLM/README.md) directory.
 
 
 ## Metrics
@@ -36,17 +36,21 @@ The `datasource`, `instance` and `gpu` are defined in the Dashboard variables as
   - If CPU throttling is low and GPU utilization is high, it indicates that the system is well-balanced, with the GPU being fully utilized without CPU constraints. 
   If CPU throttling is high and GPU utilization is low, it indicates a CPU bottleneck. The CPU is unable to keep up with the GPU's processing demands, causing the GPU to remain underutilized. If both metrics are high, it may indicate that the workload is demanding for both CPU and GPU, and you may need to scale up resources.
   - Queries:
-    - sum(rate(container_cpu_cfs_throttled_seconds_total{namespace=~\"$namespace\", pod=~\"granite.*\"}[5m])) by (namespace)
+    - sum(rate(container_cpu_cfs_throttled_seconds_total{namespace="$namespace", pod=~"granite.*"}[5m])) by (namespace)
     - avg_over_time(DCGM_FI_DEV_GPU_UTIL{instance=~"$instance", gpu=~"$gpu"}[5m])
 
  
  
 ### vLLM Metrics
-- GPU Cache Utilization: Tracks the percentage of GPU memory used by the vLLM model, providing insights into memory efficiency.
-  - 
+- GPU / CPU Cache Utilization: Tracks the percentage of GPU memory used by the vLLM model, providing insights into memory efficiency.
+  - Query: sum_over_time(vllm:gpu_cache_usage_perc{namespace="${namespace}",pod=~"granite.*"}[24h])
 #### Request and Resource Utilization Metrics
-- Running Requests: The number of requests actively being processed; helps monitor workload concurrency.
-- Waiting Requests: Tracks requests in the queue, indicating system saturation.
+- Waiting x Running Requests
+  - Running Requests: The number of requests actively being processed; helps monitor workload concurrency.
+    - num_requests_running{namespace="$namespace", pod=~"granite.*"}
+  - Waiting Requests: Tracks requests in the queue, indicating system saturation.
+    - num_requests_waiting{namespace="$namespace", pod=~"granite.*"} 
+
 - Prefix Cache Hit Rates: `vllm:cpu_prefix_cache_hit_rate, vllm:gpu_prefix_cache_hit_rate`: High hit rates imply efficient reuse of cached computations, optimizing resource usage.
 
 #### Performance Metrics
