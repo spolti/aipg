@@ -1,4 +1,4 @@
-# ACcelerators Metrics
+# Accelerators Metrics
 
 This example aims to provide a quick how-to guide about getting the most impoortant metrics related to GPU consumption when using Large Language Models.
 At this point, it is assumer that you already have Red Hat OpenShift AI running and some LLM model deployed.
@@ -14,15 +14,15 @@ The `datasource`, `instance` and `gpu` are defined in the Dashboard variables as
 
 
 ### Accelerators Metrics
-- GPU Utilization: Tracks the percentage of time the GPU is actively processing tasks, indicating GPU workload levels.
-  - Query: DCGM_FI_DEV_GPU_UTIL{instance=~"$instance", gpu=~"$gpu"}
-- GPU Memory Utilization: Shows memory usage vs free memory, critical for identifying memory bottlenecks in GPU-heavy workloads.
-  - Query: DCGM_FI_DEV_POWER_USAGE{instance=~"$instance", gpu=~"$gpu"}
-  - Sum: sum(DCGM_FI_DEV_POWER_USAGE{instance=~"$instance", gpu=~"$gpu"})
-- GPU Temperature: Ensures the GPU operates within safe thermal limits to prevent hardware degradation.
-  - Query: DCGM_FI_DEV_GPU_TEMP{instance=~"$instance", gpu=~"$gpu"}
-  - Avg: avg(DCGM_FI_DEV_GPU_TEMP{instance=~"$instance", gpu=~"$gpu"})
-- GPU Throttling: It occurs when the GPU automatically reduces the clock to avoid damage from overheating
+- **GPU Utilization**: Tracks the percentage of time the GPU is actively processing tasks, indicating GPU workload levels.
+  - Query: `DCGM_FI_DEV_GPU_UTIL{instance=~"$instance", gpu=~"$gpu"}`
+- **GPU Memory Utilization**: Shows memory usage vs free memory, critical for identifying memory bottlenecks in GPU-heavy workloads.
+  - Query: `DCGM_FI_DEV_POWER_USAGE{instance=~"$instance", gpu=~"$gpu"}`
+  - Sum: `sum(DCGM_FI_DEV_POWER_USAGE{instance=~"$instance", gpu=~"$gpu"})`
+- **GPU** Temperature: Ensures the GPU operates within safe thermal limits to prevent hardware degradation.
+  - Query: `DCGM_FI_DEV_GPU_TEMP{instance=~"$instance", gpu=~"$gpu"}`
+  - Avg: `avg(DCGM_FI_DEV_GPU_TEMP{instance=~"$instance", gpu=~"$gpu"})`
+- **GPU Throttling**: It occurs when the GPU automatically reduces the clock to avoid damage from overheating
   - Key Metrics to Visualize:
     - GPU Temperature: Monitor the GPU temperature. Throttling often occurs when the GPU reaches a certain temperature (e.g., 85-90°C)2.
     - SM Clock Speed: Observe the core clock speed. A significant drop in the clock speed while the GPU is under load indicates throttling.
@@ -30,39 +30,82 @@ The `datasource`, `instance` and `gpu` are defined in the Dashboard variables as
 
 
 ###  CPU Metrics
-- CPU Utilization: node:node_cpu_utilisation:avg1m: Tracks CPU usage to identify workloads that are CPU-bound.
-  - sum(rate(container_cpu_usage_seconds_total{namespace="granite", pod=~"granite.*"}[5m])) by (namespace)
-- CPU-GPU Bottlenecks: container_cpu_cfs_throttled_seconds_total + DCGM_FI_DEV_GPU_UTIL: A combination of CPU throttling and GPU usage metrics to identify resource allocation inefficiencies.
+- **CPU Utilization**: node:node_cpu_utilisation:avg1m: Tracks CPU usage to identify workloads that are CPU-bound.
+  - Query: `sum(rate(container_cpu_usage_seconds_total{namespace="granite", pod=~"granite.*"}[5m])) by (namespace)`
+- **CPU-GPU Bottlenecks**: `container_cpu_cfs_throttled_seconds_total` + `DCGM_FI_DEV_GPU_UTIL`: A combination of CPU throttling and GPU usage metrics to identify resource allocation inefficiencies.
   - If CPU throttling is low and GPU utilization is high, it indicates that the system is well-balanced, with the GPU being fully utilized without CPU constraints. 
   If CPU throttling is high and GPU utilization is low, it indicates a CPU bottleneck. The CPU is unable to keep up with the GPU's processing demands, causing the GPU to remain underutilized. If both metrics are high, it may indicate that the workload is demanding for both CPU and GPU, and you may need to scale up resources.
   - Queries:
-    - sum(rate(container_cpu_cfs_throttled_seconds_total{namespace="$namespace", pod=~"granite.*"}[5m])) by (namespace)
-    - avg_over_time(DCGM_FI_DEV_GPU_UTIL{instance=~"$instance", gpu=~"$gpu"}[5m])
+    - `sum(rate(container_cpu_cfs_throttled_seconds_total{namespace="$namespace", pod=~"granite.*"}[5m])) by (namespace)`
+    - `avg_over_time(DCGM_FI_DEV_GPU_UTIL{instance=~"$instance", gpu=~"$gpu"}[5m])`
 
  
  
 ### vLLM Metrics
-- GPU / CPU Cache Utilization: Tracks the percentage of GPU memory used by the vLLM model, providing insights into memory efficiency.
-  - Query: sum_over_time(vllm:gpu_cache_usage_perc{namespace="${namespace}",pod=~"granite.*"}[24h])
-#### Request and Resource Utilization Metrics
-- Waiting x Running Requests
-  - Running Requests: The number of requests actively being processed; helps monitor workload concurrency.
-    - num_requests_running{namespace="$namespace", pod=~"granite.*"}
-  - Waiting Requests: Tracks requests in the queue, indicating system saturation.
-    - num_requests_waiting{namespace="$namespace", pod=~"granite.*"} 
+- **GPU / CPU Cache Utilization**: Tracks the percentage of GPU memory used by the vLLM model, providing insights into memory efficiency.
+  - Query: `sum_over_time(vllm:gpu_cache_usage_perc{namespace="${namespace}",pod=~"granite.*"}[24h])`
 
-- Prefix Cache Hit Rates: `vllm:cpu_prefix_cache_hit_rate, vllm:gpu_prefix_cache_hit_rate`: High hit rates imply efficient reuse of cached computations, optimizing resource usage.
+#### Request and Resource Utilization Metrics
+- **Waiting x Running Requests**
+  - *Running Requests*: The number of requests actively being processed; helps monitor workload concurrency.
+    - `num_requests_running{namespace="$namespace", pod=~"granite.*"}`
+  - *Waiting Requests*: Tracks requests in the queue, indicating system saturation.
+    - `num_requests_waiting{namespace="$namespace", pod=~"granite.*"}`
+
+- **Prefix Cache Hit Rates**: `vllm:cpu_prefix_cache_hit_rate, vllm:gpu_prefix_cache_hit_rate`: High hit rates imply efficient reuse of cached computations, optimizing resource usage.
+  - Queries:
+    - `vllm:gpu_cache_usage_perc{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}`
+    - `vllm:cpu_cache_usage_perc{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}`
+- **Request Total Count**:
+  - Queries:
+    - `vllm:request_success_total{finished_reason="length",namespace="$namespace", pod=~"granite.*", model_name="$model_name"}`
+      - The request ended because it reached the maximum token limit set for the model inference.
+    - `vllm:request_success_total{finished_reason="stop",namespace="$namespace", pod=~"granite.*", model_name="$model_name"}`
+      - The request completed naturally based on the model's output or a stop condition (e.g., end of a sentence or token completion).
+
 
 #### Performance Metrics
-- End-to-End Latency: Measures the overall time to process a request, critical for user experience.
-- Request Queue Time: Indicates potential system overload or scheduling inefficiencies.
-- Inference Time: Tracks the time spent in model inference, offering insights into processing efficiency.
+- **End-to-End Latency**: Measures the overall time to process a request, critical for user experience.
+  - Queries: Combiation of (rate_interval=):
+    - `histogram_quantile(0.99, sum by(le) (rate(vllm:e2e_request_latency_seconds_bucket{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])))`
+    - `histogram_quantile(0.95, sum by(le) (rate(vllm:e2e_request_latency_seconds_bucket{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])))`
+    - `histogram_quantile(0.9, sum by(le) (rate(vllm:e2e_request_latency_seconds_bucket{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])))`
+    - `histogram_quantile(0.5, sum by(le) (rate(vllm:e2e_request_latency_seconds_bucket{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])))`
+    - `rate(vllm:e2e_request_latency_seconds_sum{namespace="$namespace", pod=~"granite.*",model_name="$model_name"}[5m])`
+      `  /`
+      `rate(vllm:e2e_request_latency_seconds_count{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])`
+
+TODO - These two are not yet present in the vllm version used by RHOAI. (https://docs.vllm.ai/en/v0.6.6/serving/metrics.html)
+- **Request Queue Time**: Indicates potential system overload or scheduling inefficiencies.
+  - Query: `rate(vllm:request_queue_time_seconds_sum{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])`
+- **Inference Time**: Tracks the time spent in model inference, offering insights into processing efficiency.
+  - Query: `rate(vllm:request_inference_time_seconds{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])`
 
 #### Throughput Metrics 
-- Time To First Token (TTFT): The time taken to generate the first token in a response.
-- Time Per Output Token (TPOT): The average time taken to generate each output token.
-- Prompt Throughput: Tracks the speed of processing prompt tokens, which is essential for LLM optimization.
-- Generation Throughput: Measures the efficiency of generating response tokens, critical for real-time applications.
+- **Time To First Token (TTFT) Latency**: The time taken to generate the first token in a response.
+  - Queries:
+    - `histogram_quantile(0.99, sum by(le) (rate(vllm:time_to_first_token_seconds_bucket{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])))`
+    - `histogram_quantile(0.95, sum by(le) (rate(vllm:time_to_first_token_seconds_bucket{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])))`
+    - `histogram_quantile(0.9, sum by(le) (rate(vllm:time_to_first_token_seconds_bucket{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])))`
+    - `histogram_quantile(0.5, sum by(le) (rate(vllm:time_to_first_token_seconds_bucket{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])))`
+    - `rate(vllm:time_to_first_token_seconds_sum{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])`
+      `/`
+      `rate(vllm:time_to_first_token_seconds_count{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])`
+- **Time Per Output Token (TPOT) Latency**: The average time taken to generate each output token.
+  - `histogram_quantile(0.99, sum by(le) (rate(vllm:time_per_output_token_seconds_bucket{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])))`
+  - `histogram_quantile(0.95, sum by(le) (rate(vllm:time_per_output_token_seconds_bucket{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])))`
+  - `histogram_quantile(0.9, sum by(le) (rate(vllm:time_per_output_token_seconds_bucket{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])))`
+  - `histogram_quantile(0.5, sum by(le) (rate(vllm:time_per_output_token_seconds_bucket{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])))`
+  - `rate(vllm:time_per_output_token_seconds_sum{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])`
+    `/`
+    `rate(vllm:time_per_output_token_seconds_count{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])`
+
+- **Prompt Token Throughput / Generation Throughput**: Tracks the speed of processing prompt tokens, which is essential for LLM optimization.
+  - Queries:
+    - `rate(vllm:prompt_tokens_total{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])`
+    - `rate(vllm:generation_tokens_total{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])`
+- **Total Token Generated**: Measures the efficiency of generating response tokens, critical for real-time applications.
+  - Query: `sum(vllm:generation_tokens_total{namespace="$namespace", pod=~"granite.*", model_name="$model_name"})`
 
 
 ## Deploying the Grafana operator
@@ -175,6 +218,17 @@ This will install one dashboard with 3 subsections:
 
 
 ![Grafana Login Page](assets/grafana-login.png)
+
+# Metrics Dashboard
+
+## GPU Metrics
+![GPU Metrics](assets/images/gpu-metrics.png)
+
+## vLLM Metrics
+![vLLM Metrics](assets/images/vllm-metrics.png)
+
+## CPU x GPU Metrics
+![CPU x GPU Metrics](assets/images/cpu-gpu-metrics.png)
 
 
 
