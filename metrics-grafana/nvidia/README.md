@@ -1,16 +1,68 @@
 # Accelerators Metrics
 
-This example aims to provide a quick how-to guide about getting the most impoortant metrics related to GPU consumption when using Large Language Models.
-At this point, it is assumer that you already have Red Hat OpenShift AI running and some LLM model deployed.
+This example aims to provide a quick how-to guide about getting the most important metrics related to GPU consumption and vLLM performance when using Large Language Models.
+At this point, it is assumed that you already have the Red Hat OpenShift AI platform running and some LLM model deployed.
 
-You can follow the steps described in the [Granite-vLLM](../../Granite-vLLM/README.md) directory.
+You can follow the steps described in the [Granite-vLLM](../../Granite-vLLM/README.md) directory to install a LLM for testing.
 
 
 ## Metrics
 
 Below you can find the set of metrics that the provided Grafana board contains.
-The `datasource`, `instance` and `gpu` are defined in the Dashboard variables as:
+The `datasource`, `instance` and `gpu` are variables defined inside the board, and it is defined as:
 
+```yaml
+{
+  "current": {
+    "text": [
+      "All"
+    ],
+    "value": [
+      "$__all"
+    ]
+  },
+  "datasource": "$datasource",
+  "definition": "label_values(DCGM_FI_DEV_GPU_TEMP,gpu)",
+  "includeAll": true,
+  "multi": true,
+  "name": "gpu",
+  "options": [],
+  "query": "label_values(DCGM_FI_DEV_GPU_TEMP,gpu)",
+  "refresh": 1,
+  "regex": "",
+  "sort": 1,
+  "type": "query"
+},
+{
+  "current": {
+    "text": "granite",
+    "value": "granite"
+  },
+  "description": "",
+  "hide": 1,
+  "name": "namespace",
+  "options": [
+    {
+      "selected": true,
+      "text": "granite",
+      "value": "granite"
+    }
+  ],
+  "query": "granite",
+  "type": "textbox"
+},
+{
+  "current": {
+    "text": "granite318b",
+    "value": "granite318b"
+  },
+  "hide": 2,
+  "name": "model_name",
+  "query": "granite318b",
+  "skipUrlSync": true,
+  "type": "constant"
+}
+```
 
 
 ### Accelerators Metrics
@@ -66,7 +118,7 @@ The `datasource`, `instance` and `gpu` are defined in the Dashboard variables as
 
 #### Performance Metrics
 - **End-to-End Latency**: Measures the overall time to process a request, critical for user experience.
-  - Queries: Combiation of (rate_interval=):
+  - Queries: Histogram:
     - `histogram_quantile(0.99, sum by(le) (rate(vllm:e2e_request_latency_seconds_bucket{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])))`
     - `histogram_quantile(0.95, sum by(le) (rate(vllm:e2e_request_latency_seconds_bucket{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])))`
     - `histogram_quantile(0.9, sum by(le) (rate(vllm:e2e_request_latency_seconds_bucket{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])))`
@@ -76,6 +128,7 @@ The `datasource`, `instance` and `gpu` are defined in the Dashboard variables as
       `rate(vllm:e2e_request_latency_seconds_count{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])`
 
 TODO - These two are not yet present in the vllm version used by RHOAI. (https://docs.vllm.ai/en/v0.6.6/serving/metrics.html)
+It might be available when we upgrade the vllm server.
 - **Request Queue Time**: Indicates potential system overload or scheduling inefficiencies.
   - Query: `rate(vllm:request_queue_time_seconds_sum{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])`
 - **Inference Time**: Tracks the time spent in model inference, offering insights into processing efficiency.
@@ -110,6 +163,8 @@ TODO - These two are not yet present in the vllm version used by RHOAI. (https:/
 
 ## Deploying the Grafana operator
 
+For this tutorial we will be using the `nopenshift-user-workload-monitoring` namespace to configure Grafana and deploy the Dashboard.
+
 Execute the Grafana operator using the [deploy-grafana-operator.yaml](assets/deploy-grafana-operator.yaml).
 ```bash
 oc apply -f assets/deploy-grafana-operator.yaml
@@ -132,7 +187,7 @@ grafana-operator-controller-manager-v5-7df8b7dbbf-lkmhs   1/1     Running       
 ```
 
 Now, we need to configure the service account so Grafana can query the `Thanos` endpoint.
-To do that, apply the content from [](assets/sa-rb.yaml)
+To do that, apply the content from [service account role binding](assets/sa-rb.yaml)
 
 This will:
 - create the service account `grafana-sa`
@@ -142,7 +197,7 @@ This will:
 oc apply -f assets/sa-rb.yaml
 ```
 
-Now, let's get the serviceAccount token and store in a secretL
+Now, let's get the `serviceAccount` token and store in a secret:
 ```Bash
 SECRET_NAME=$(oc -n openshift-user-workload-monitoring describe sa grafana-sa | awk '/Tokens/{ print $2 }')
 # echo $SECRET_NAME
@@ -175,10 +230,10 @@ Now, we can proceed and create the Grafana deployment to serve our needs:
 oc apply -f assets/grafana-deployment.yaml
 # check if the deployment is ready:
 oc get grafana -n openshift-user-workload-monitoring
-# if it failed, add -oyaml to the previous
+# if it failed, add -oyaml to the previous command for more detailed messages
 ```
 
-Now we need to expose it. By default it should be `grafana-service`, confirm with the following command:
+Now we need to expose it. By default the service name should be `grafana-service`, confirm with the following command:
 ```bash
 oc get svc -n openshift-user-workload-monitoring | grep grafana
 ```
@@ -214,7 +269,7 @@ This will install one dashboard with 3 subsections:
 
 - GPU Metrics.
 - vLLM Performance Metrics.
-- Default vLLM metrics exposed by RHOAI Dashboard.
+- CPU x GPU metrics.
 
 
 ![Grafana Login Page](assets/grafana-login.png)
