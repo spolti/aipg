@@ -55,3 +55,18 @@ spec:
       modelFormat:
         name: sklearn
       storageUri: "gs://kfserving-examples/models/sklearn/1.0/model"
+      env:
+        - name: MODEL_NAME
+          value: "sklearn-iris"
+        - name: MODEL_URI
+          value: "gs://kfserving-examples/models/sklearn/1.0/model"
+        - name: MODEL_VERSION
+          value: "1.0"
+        - name: MODEL_CLASS
+          value: "sklearn"
+        - name: MODEL_HANDLER
+          value: "predict"
+        - name: MODEL_TYPE  
+          value: "sklearn"
+        - name: MODEL_RUNTIME
+          value: "mlserver-1.x"

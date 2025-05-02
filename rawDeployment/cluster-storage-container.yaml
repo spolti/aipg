@@ -1,0 +1,23 @@
+apiVersion: "serving.kserve.io/v1alpha1"
+kind: ClusterStorageContainer
+metadata:
+  name: default
+spec:
+  container:
+    name: storage-initializer
+    # image: kserve/storage-initializer:latest
+    image: quay.io/spolti/storage-test-hugging:1
+    # env: 
+  #     - name: HUGGINGFACE_HUB_CACHE
+  #       value: /mnt/models
+      # - name: HF_HOME
+      #   value: /tmp/hf_home
+  supportedUriFormats:
+    - prefix: hf://
+    - prefix: gs://
+    - prefix: s3://
+    - prefix: hdfs://
+    - prefix: webhdfs://
+    - regex: "https://(.+?).blob.core.windows.net/(.+)"
+    - regex: "https://(.+?).file.core.windows.net/(.+)"
+    - regex: "https?://(.+)/(.+)"
