@@ -140,7 +140,7 @@ Use this command to install the Serving Runtime:
 
 ```bash
 oc new-project granite
-oc process -n opendatahub -o yaml vllm-runtime-template | oc apply -f -
+oc process -n opendatahub -o yaml vllm-cuda-runtime-template | oc apply -f -
 ```
 
 Check if it was installed:

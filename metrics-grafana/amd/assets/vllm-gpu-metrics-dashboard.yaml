@@ -1,13 +1,13 @@
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDashboard
 metadata:
-  name: nvidia-gpu-vllm-metrics-dashboard
+  name: amd-gpu-vllm-metrics-dashboard
   namespace: openshift-user-workload-monitoring
 spec:
   instanceSelector:
     matchLabels:
       dashboards: grafana
-  folder: "vLLM / GPU Metrics"
+  folder: "vLLM / GPU Metrics - Work In Progress"
   json: |
     {
       "annotations": {
@@ -2196,7 +2196,7 @@ spec:
       },
       "timepicker": {},
       "timezone": "",
-      "title": "vLLM / GPU Metrics - NVIDIA",
+      "title": "vLLM / GPU Metrics - AMD",
       "uid": "aec6hbnje0zy8a",
       "version": 1,
       "weekStart": ""
