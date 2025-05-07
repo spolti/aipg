@@ -8,62 +8,98 @@ You can follow the steps described in the [Granite-vLLM](../../Granite-vLLM/READ
 
 ## Metrics
 
-Below you can find the set of metrics that the provided Grafana board contains.
-The `datasource`, `instance` and `gpu` are variables defined inside the board, and it is defined as:
+The `namespace` and `model_name` are variables defined inside the board, and it is defined as:
 
 ```yaml
-{
-  "current": {
-    "text": [
-      "All"
-    ],
-    "value": [
-      "$__all"
-    ]
-  },
-  "datasource": "$datasource",
-  "definition": "label_values(DCGM_FI_DEV_GPU_TEMP,gpu)",
-  "includeAll": true,
-  "multi": true,
-  "name": "gpu",
-  "options": [],
-  "query": "label_values(DCGM_FI_DEV_GPU_TEMP,gpu)",
-  "refresh": 1,
-  "regex": "",
-  "sort": 1,
-  "type": "query"
-},
-{
-  "current": {
-    "text": "granite",
-    "value": "granite"
-  },
-  "description": "",
-  "hide": 1,
-  "name": "namespace",
-  "options": [
-    {
-      "selected": true,
-      "text": "granite",
-      "value": "granite"
-    }
-  ],
-  "query": "granite",
-  "type": "textbox"
-},
-{
-  "current": {
-    "text": "granite318b",
-    "value": "granite318b"
-  },
-  "hide": 2,
-  "name": "model_name",
-  "query": "granite318b",
-  "skipUrlSync": true,
-  "type": "constant"
-}
+          {
+            "current": {
+              "text": "${NAMESPACE}",
+              "value": "${NAMESPACE}"
+            },
+            "description": "",
+            "hide": 1,
+            "name": "namespace",
+            "options": [
+              {
+                "selected": true,
+                "text": "${NAMESPACE}",
+                "value": "${NAMESPACE}"
+              }
+            ],
+            "query": "${NAMESPACE}",
+            "type": "textbox"
+          },
+          {
+            "current": {
+              "text": "${MODEL_NAME}",
+              "value": "${MODEL_NAME}"
+            },
+            "hide": 2,
+            "name": "model_name",
+            "query": "${MODEL_NAME}",
+            "skipUrlSync": true,
+            "type": "constant"
+          }
+        ]
 ```
 
+Note, these needs to be updated before or after the deployment, to update it follow the steps below:
+We will use the `envsubst` command to replace the variables in the JSON string with the actual values provided in the 
+[inputs.env](inputs.env) file, example:
+
+```bash
+# the following command reads the environment variables from the inputs.env file and exports them to the current shell
+# so it can be used by the envsubst command
+export $(cat inputs.env | xargs)
+envsubst '${NAMESPACE} ${MODEL_NAME}' < vllm-gpu-metrics-dashboard.yaml > /tmp/vllm-gpu-metrics-dashboard.yaml-replaced.yaml
+```
+
+As example, the `inputs.env` file contains this values:
+```bash
+NAMESPACE=granite
+MODEL_NAME=granite318b
+```
+
+These values will be replaced by its placeholders in the [dashboard](vllm-gpu-metrics-dashboard.yaml), in the end of
+the generated file, pay attention to this section, where the `namespace` and `model_name` inputs are defined:
+
+```json
+       {
+            "current": {
+              "text": "granite",
+              "value": "granite"
+            },
+            "description": "",
+            "hide": 1,
+            "name": "namespace",
+            "options": [
+              {
+                "selected": true,
+                "text": "granite",
+                "value": "granite"
+              }
+            ],
+            "query": "granite",
+            "type": "textbox"
+          },
+          {
+            "current": {
+              "text": "granite318b",
+              "value": "granite318b"
+            },
+            "hide": 2,
+            "name": "model_name",
+            "query": "granite318b",
+            "skipUrlSync": true,
+            "type": "constant"
+          }
+        ]
+      },
+```
+
+Notice that the model_name and namespace dashboards variables were updated to the values from `inputs.env` file.
+
+> The installation will happen in the end of this tutorial.
 
 ### Accelerators Metrics
 
@@ -86,7 +122,7 @@ The `datasource`, `instance` and `gpu` are variables defined inside the board, a
   - If CPU throttling is low and GPU utilization is high, it indicates that the system is well-balanced, with the GPU being fully utilized without CPU constraints. 
   If CPU throttling is high and GPU utilization is low, it indicates a CPU bottleneck. The CPU is unable to keep up with the GPU's processing demands, causing the GPU to remain underutilized. If both metrics are high, it may indicate that the workload is demanding for both CPU and GPU, and you may need to scale up resources.
   - Queries:
-    - `sum(rate(container_cpu_cfs_throttled_seconds_total{namespace="$namespace", pod=~"granite.*"}[5m])) by (namespace)`
+    - `sum(rate(container_cpu_cfs_throttled_seconds_total{namespace="$namespace", pod=~"$model_name.*"}[5m])) by (namespace)`
     - `avg_over_time(DCGM_FI_DEV_GPU_UTIL{instance=~"$instance", gpu=~"$gpu"}[5m])`
 
  
@@ -108,7 +144,7 @@ The `datasource`, `instance` and `gpu` are variables defined inside the board, a
   - If CPU throttling is low and GPU utilization is high, it indicates that the system is well-balanced, with the GPU being fully utilized without CPU constraints. 
   If CPU throttling is high and GPU utilization is low, it indicates a CPU bottleneck. The CPU is unable to keep up with the GPU's processing demands, causing the GPU to remain underutilized. If both metrics are high, it may indicate that the workload is demanding for both CPU and GPU, and you may need to scale up resources.
   - Queries:
-    - `sum(rate(container_cpu_cfs_throttled_seconds_total{namespace="$namespace", pod=~"granite.*"}[5m])) by (namespace)`
+    - `sum(rate(container_cpu_cfs_throttled_seconds_total{namespace="$namespace", pod=~"$model_name.*"}[5m])) by (namespace)`
     - `avg_over_time(DCGM_FI_DEV_GPU_UTIL{instance=~"$instance", gpu=~"$gpu"}[5m])`
 
 
@@ -130,76 +166,76 @@ The `datasource`, `instance` and `gpu` are variables defined inside the board, a
   - If CPU throttling is low and GPU utilization is high, it indicates that the system is well-balanced, with the GPU being fully utilized without CPU constraints. 
   If CPU throttling is high and GPU utilization is low, it indicates a CPU bottleneck. The CPU is unable to keep up with the GPU's processing demands, causing the GPU to remain underutilized. If both metrics are high, it may indicate that the workload is demanding for both CPU and GPU, and you may need to scale up resources.
   - Queries:
-    - `sum(rate(container_cpu_cfs_throttled_seconds_total{namespace="$namespace", pod=~"granite.*"}[5m])) by (namespace)`
+    - `sum(rate(container_cpu_cfs_throttled_seconds_total{namespace="$namespace", pod=~"$model_name.*"}[5m])) by (namespace)`
     - `avg_over_time(DCGM_FI_DEV_GPU_UTIL{instance=~"$instance", gpu=~"$gpu"}[5m])`
 
  
 ### vLLM Metrics
 - **GPU / CPU Cache Utilization**: Tracks the percentage of GPU memory used by the vLLM model, providing insights into memory efficiency.
-  - Query: `sum_over_time(vllm:gpu_cache_usage_perc{namespace="${namespace}",pod=~"granite.*"}[24h])`
+  - Query: `sum_over_time(vllm:gpu_cache_usage_perc{namespace="${namespace}",pod=~"$model_name.*"}[24h])`
 
 #### Request and Resource Utilization Metrics
 - **Waiting x Running Requests**
   - *Running Requests*: The number of requests actively being processed; helps monitor workload concurrency.
-    - `num_requests_running{namespace="$namespace", pod=~"granite.*"}`
+    - `num_requests_running{namespace="$namespace", pod=~"$model_name.*"}`
   - *Waiting Requests*: Tracks requests in the queue, indicating system saturation.
-    - `num_requests_waiting{namespace="$namespace", pod=~"granite.*"}`
+    - `num_requests_waiting{namespace="$namespace", pod=~"$model_name.*"}`
 
 - **Prefix Cache Hit Rates**: `vllm:cpu_prefix_cache_hit_rate, vllm:gpu_prefix_cache_hit_rate`: High hit rates imply efficient reuse of cached computations, optimizing resource usage.
   - Queries:
-    - `vllm:gpu_cache_usage_perc{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}`
-    - `vllm:cpu_cache_usage_perc{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}`
+    - `vllm:gpu_cache_usage_perc{namespace="$namespace", pod=~"$model_name.*", model_name="$model_name"}`
+    - `vllm:cpu_cache_usage_perc{namespace="$namespace", pod=~"$model_name.*", model_name="$model_name"}`
 - **Request Total Count**:
   - Queries:
-    - `vllm:request_success_total{finished_reason="length",namespace="$namespace", pod=~"granite.*", model_name="$model_name"}`
+    - `vllm:request_success_total{finished_reason="length",namespace="$namespace", pod=~"$model_name.*", model_name="$model_name"}`
       - The request ended because it reached the maximum token limit set for the model inference.
-    - `vllm:request_success_total{finished_reason="stop",namespace="$namespace", pod=~"granite.*", model_name="$model_name"}`
+    - `vllm:request_success_total{finished_reason="stop",namespace="$namespace", pod=~"$model_name.*", model_name="$model_name"}`
       - The request completed naturally based on the model's output or a stop condition (e.g., end of a sentence or token completion).
 
 
 #### Performance Metrics
 - **End-to-End Latency**: Measures the overall time to process a request, critical for user experience.
   - Queries: Histogram:
-    - `histogram_quantile(0.99, sum by(le) (rate(vllm:e2e_request_latency_seconds_bucket{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])))`
-    - `histogram_quantile(0.95, sum by(le) (rate(vllm:e2e_request_latency_seconds_bucket{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])))`
-    - `histogram_quantile(0.9, sum by(le) (rate(vllm:e2e_request_latency_seconds_bucket{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])))`
-    - `histogram_quantile(0.5, sum by(le) (rate(vllm:e2e_request_latency_seconds_bucket{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])))`
-    - `rate(vllm:e2e_request_latency_seconds_sum{namespace="$namespace", pod=~"granite.*",model_name="$model_name"}[5m])`
+    - `histogram_quantile(0.99, sum by(le) (rate(vllm:e2e_request_latency_seconds_bucket{namespace="$namespace", pod=~"$model_name.*", model_name="$model_name"}[5m])))`
+    - `histogram_quantile(0.95, sum by(le) (rate(vllm:e2e_request_latency_seconds_bucket{namespace="$namespace", pod=~"$model_name.*", model_name="$model_name"}[5m])))`
+    - `histogram_quantile(0.9, sum by(le) (rate(vllm:e2e_request_latency_seconds_bucket{namespace="$namespace", pod=~"$model_name.*", model_name="$model_name"}[5m])))`
+    - `histogram_quantile(0.5, sum by(le) (rate(vllm:e2e_request_latency_seconds_bucket{namespace="$namespace", pod=~"$model_name.*", model_name="$model_name"}[5m])))`
+    - `rate(vllm:e2e_request_latency_seconds_sum{namespace="$namespace", pod=~"$model_name.*",model_name="$model_name"}[5m])`
       `  /`
-      `rate(vllm:e2e_request_latency_seconds_count{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])`
+      `rate(vllm:e2e_request_latency_seconds_count{namespace="$namespace", pod=~"$model_name.*", model_name="$model_name"}[5m])`
 
 TODO - These two are not yet present in the vllm version used by RHOAI. (https://docs.vllm.ai/en/v0.6.6/serving/metrics.html)
 It might be available when we upgrade the vllm server.
 - **Request Queue Time**: Indicates potential system overload or scheduling inefficiencies.
-  - Query: `rate(vllm:request_queue_time_seconds_sum{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])`
+  - Query: `rate(vllm:request_queue_time_seconds_sum{namespace="$namespace", pod=~"$model_name.*", model_name="$model_name"}[5m])`
 - **Inference Time**: Tracks the time spent in model inference, offering insights into processing efficiency.
-  - Query: `rate(vllm:request_inference_time_seconds{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])`
+  - Query: `rate(vllm:request_inference_time_seconds{namespace="$namespace", pod=~"$model_name.*", model_name="$model_name"}[5m])`
 
 #### Throughput Metrics 
 - **Time To First Token (TTFT) Latency**: The time taken to generate the first token in a response.
   - Queries:
-    - `histogram_quantile(0.99, sum by(le) (rate(vllm:time_to_first_token_seconds_bucket{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])))`
-    - `histogram_quantile(0.95, sum by(le) (rate(vllm:time_to_first_token_seconds_bucket{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])))`
-    - `histogram_quantile(0.9, sum by(le) (rate(vllm:time_to_first_token_seconds_bucket{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])))`
-    - `histogram_quantile(0.5, sum by(le) (rate(vllm:time_to_first_token_seconds_bucket{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])))`
-    - `rate(vllm:time_to_first_token_seconds_sum{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])`
+    - `histogram_quantile(0.99, sum by(le) (rate(vllm:time_to_first_token_seconds_bucket{namespace="$namespace", pod=~"$model_name.*", model_name="$model_name"}[5m])))`
+    - `histogram_quantile(0.95, sum by(le) (rate(vllm:time_to_first_token_seconds_bucket{namespace="$namespace", pod=~"$model_name.*", model_name="$model_name"}[5m])))`
+    - `histogram_quantile(0.9, sum by(le) (rate(vllm:time_to_first_token_seconds_bucket{namespace="$namespace", pod=~"$model_name.*", model_name="$model_name"}[5m])))`
+    - `histogram_quantile(0.5, sum by(le) (rate(vllm:time_to_first_token_seconds_bucket{namespace="$namespace", pod=~"$model_name.*", model_name="$model_name"}[5m])))`
+    - `rate(vllm:time_to_first_token_seconds_sum{namespace="$namespace", pod=~"$model_name.*", model_name="$model_name"}[5m])`
       `/`
-      `rate(vllm:time_to_first_token_seconds_count{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])`
+      `rate(vllm:time_to_first_token_seconds_count{namespace="$namespace", pod=~"$model_name.*", model_name="$model_name"}[5m])`
 - **Time Per Output Token (TPOT) Latency**: The average time taken to generate each output token.
-  - `histogram_quantile(0.99, sum by(le) (rate(vllm:time_per_output_token_seconds_bucket{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])))`
-  - `histogram_quantile(0.95, sum by(le) (rate(vllm:time_per_output_token_seconds_bucket{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])))`
-  - `histogram_quantile(0.9, sum by(le) (rate(vllm:time_per_output_token_seconds_bucket{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])))`
-  - `histogram_quantile(0.5, sum by(le) (rate(vllm:time_per_output_token_seconds_bucket{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])))`
-  - `rate(vllm:time_per_output_token_seconds_sum{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])`
+  - `histogram_quantile(0.99, sum by(le) (rate(vllm:time_per_output_token_seconds_bucket{namespace="$namespace", pod=~"$model_name.*", model_name="$model_name"}[5m])))`
+  - `histogram_quantile(0.95, sum by(le) (rate(vllm:time_per_output_token_seconds_bucket{namespace="$namespace", pod=~"$model_name.*", model_name="$model_name"}[5m])))`
+  - `histogram_quantile(0.9, sum by(le) (rate(vllm:time_per_output_token_seconds_bucket{namespace="$namespace", pod=~"$model_name.*", model_name="$model_name"}[5m])))`
+  - `histogram_quantile(0.5, sum by(le) (rate(vllm:time_per_output_token_seconds_bucket{namespace="$namespace", pod=~"$model_name.*", model_name="$model_name"}[5m])))`
+  - `rate(vllm:time_per_output_token_seconds_sum{namespace="$namespace", pod=~"$model_name.*", model_name="$model_name"}[5m])`
     `/`
-    `rate(vllm:time_per_output_token_seconds_count{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])`
+    `rate(vllm:time_per_output_token_seconds_count{namespace="$namespace", pod=~"$model_name.*", model_name="$model_name"}[5m])`
 
 - **Prompt Token Throughput / Generation Throughput**: Tracks the speed of processing prompt tokens, which is essential for LLM optimization.
   - Queries:
-    - `rate(vllm:prompt_tokens_total{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])`
-    - `rate(vllm:generation_tokens_total{namespace="$namespace", pod=~"granite.*", model_name="$model_name"}[5m])`
+    - `rate(vllm:prompt_tokens_total{namespace="$namespace", pod=~"$model_name.*", model_name="$model_name"}[5m])`
+    - `rate(vllm:generation_tokens_total{namespace="$namespace", pod=~"$model_name.*", model_name="$model_name"}[5m])`
 - **Total Token Generated**: Measures the efficiency of generating response tokens, critical for real-time applications.
-  - Query: `sum(vllm:generation_tokens_total{namespace="$namespace", pod=~"granite.*", model_name="$model_name"})`
+  - Query: `sum(vllm:generation_tokens_total{namespace="$namespace", pod=~"$model_name.*", model_name="$model_name"})`
 
 
 ## Deploying the Grafana operator
@@ -310,10 +346,6 @@ This will install one dashboard with 3 subsections:
 
 - GPU Metrics.
 - vLLM Performance Metrics.
-- CPU x GPU metrics.
-
-
-![Grafana Login Page](assets/grafana-login.png)
 
 # Metrics Dashboard
 

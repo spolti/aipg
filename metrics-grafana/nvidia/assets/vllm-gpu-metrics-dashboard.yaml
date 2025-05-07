@@ -3,6 +3,9 @@ kind: GrafanaDashboard
 metadata:
   name: nvidia-gpu-vllm-metrics-dashboard
   namespace: openshift-user-workload-monitoring
+  labels:
+    app.kubernetes.io/name: odh-model-controller
+    app.kubernetes.io/managed-by: kustomize
 spec:
   instanceSelector:
     matchLabels:
@@ -19,7 +22,7 @@ spec:
               "uid": "grafana"
             },
             "enable": true,
-            "hide": true
+            "hide": true,
             "iconColor": "rgba(0, 211, 255, 1)",
             "name": "Annotations & Alerts",
             "type": "dashboard"
@@ -440,7 +443,7 @@ spec:
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "description": "GPU Total Power - The SUM of the power read from all sensoes",
+          "description": "GPU Total Power - The SUM of the power read from all sensors",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -716,7 +719,7 @@ spec:
                 "uid": "682a2344-305f-4039-b45a-303051728943"
               },
               "editorMode": "code",
-              "expr": "sum(rate(container_cpu_cfs_throttled_seconds_total{namespace=\"granite\", pod=~\"granite.*\"}[5m])) by (namespace)",
+              "expr": "sum(rate(container_cpu_cfs_throttled_seconds_total{namespace=\"$namespace\", pod=~\"$model_name.*\"}[5m])) by (namespace)",
               "format": "time_series",
               "interval": "",
               "intervalFactor": 1,
@@ -843,7 +846,7 @@ spec:
                 "uid": "${datasource}"
               },
               "editorMode": "code",
-              "expr": "vllm:gpu_cache_usage_perc{namespace=\"$namespace\", pod=~\"granite.*\", model_name=\"$model_name\"}",
+              "expr": "vllm:gpu_cache_usage_perc{namespace=\"$namespace\", pod=~\"$model_name.*\", model_name=\"$model_name\"}",
               "instant": false,
               "legendFormat": "GPU Cache Usage",
               "range": true,
@@ -855,7 +858,7 @@ spec:
                 "uid": "${datasource}"
               },
               "editorMode": "code",
-              "expr": "vllm:cpu_cache_usage_perc{namespace=\"$namespace\", pod=~\"granite.*\", model_name=\"$model_name\"}",
+              "expr": "vllm:cpu_cache_usage_perc{namespace=\"$namespace\", pod=~\"$model_name.*\", model_name=\"$model_name\"}",
               "hide": false,
               "instant": false,
               "legendFormat": "CPU Cache Usage",
@@ -956,7 +959,7 @@ spec:
                 "uid": "682a2344-305f-4039-b45a-303051728943"
               },
               "editorMode": "code",
-              "expr": "sum_over_time(vllm:gpu_cache_usage_perc{namespace=\"${namespace}\",pod=~\"granite.*\"}[24h])",
+              "expr": "sum_over_time(vllm:gpu_cache_usage_perc{namespace=\"${namespace}\",pod=~\"$model_name.*\"}[24h])",
               "isntant": false,
               "legendFormat": "GPU Cache Usage",
               "range": true,
@@ -968,7 +971,7 @@ spec:
                 "uid": "682a2344-305f-4039-b45a-303051728943"
               },
               "editorMode": "code",
-              "expr": "sum_over_time(vllm:cpu_cache_usage_perc{namespace=\"${namespace}\",pod=~\"granite.*\"}[24h])",
+              "expr": "sum_over_time(vllm:cpu_cache_usage_perc{namespace=\"${namespace}\",pod=~\"$model_name.*\"}[24h])",
               "hide": false,
               "instant": false,
               "legendFormat": "CPU Cache Usage",
@@ -1069,7 +1072,7 @@ spec:
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "histogram_quantile(0.99, sum by(le) (rate(vllm:e2e_request_latency_seconds_bucket{namespace=\"$namespace\", pod=~\"granite.*\", model_name=\"$model_name\"}[5m])))",
+              "expr": "histogram_quantile(0.99, sum by(le) (rate(vllm:e2e_request_latency_seconds_bucket{namespace=\"$namespace\", pod=~\"$model_name.*\", model_name=\"$model_name\"}[5m])))",
               "fullMetaSearch": false,
               "includeNullMetadata": false,
               "instant": false,
@@ -1085,7 +1088,7 @@ spec:
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "histogram_quantile(0.95, sum by(le) (rate(vllm:e2e_request_latency_seconds_bucket{namespace=\"$namespace\", pod=~\"granite.*\", model_name=\"$model_name\"}[5m])))",
+              "expr": "histogram_quantile(0.95, sum by(le) (rate(vllm:e2e_request_latency_seconds_bucket{namespace=\"$namespace\", pod=~\"$model_name.*\", model_name=\"$model_name\"}[5m])))",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": false,
@@ -1102,7 +1105,7 @@ spec:
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "histogram_quantile(0.9, sum by(le) (rate(vllm:e2e_request_latency_seconds_bucket{namespace=\"$namespace\", pod=~\"granite.*\", model_name=\"$model_name\"}[5m])))",
+              "expr": "histogram_quantile(0.9, sum by(le) (rate(vllm:e2e_request_latency_seconds_bucket{namespace=\"$namespace\", pod=~\"$model_name.*\", model_name=\"$model_name\"}[5m])))",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": false,
@@ -1119,7 +1122,7 @@ spec:
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "histogram_quantile(0.5, sum by(le) (rate(vllm:e2e_request_latency_seconds_bucket{namespace=\"$namespace\", pod=~\"granite.*\", model_name=\"$model_name\"}[5m])))",
+              "expr": "histogram_quantile(0.5, sum by(le) (rate(vllm:e2e_request_latency_seconds_bucket{namespace=\"$namespace\", pod=~\"$model_name.*\", model_name=\"$model_name\"}[5m])))",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": false,
@@ -1135,7 +1138,7 @@ spec:
                 "uid": "${datasource}"
               },
               "editorMode": "code",
-              "expr": "rate(vllm:e2e_request_latency_seconds_sum{namespace=\"$namespace\", pod=~\"granite.*\", model_name=\"$model_name\"}[$__rate_interval])\n/\nrate(vllm:e2e_request_latency_seconds_count{namespace=\"$namespace\", pod=~\"granite.*\", model_name=\"$model_name\"}[$__rate_interval])",
+              "expr": "rate(vllm:e2e_request_latency_seconds_sum{namespace=\"$namespace\", pod=~\"$model_name.*\", model_name=\"$model_name\"}[$__rate_interval])\n/\nrate(vllm:e2e_request_latency_seconds_count{namespace=\"$namespace\", pod=~\"$model_name.*\", model_name=\"$model_name\"}[$__rate_interval])",
               "hide": false,
               "instant": false,
               "legendFormat": "Average",
@@ -1235,7 +1238,7 @@ spec:
                 "uid": "682a2344-305f-4039-b45a-303051728943"
               },
               "editorMode": "code",
-              "expr": "vllm:num_requests_running{namespace='${namespace}',  pod=~\"granite.*\"}",
+              "expr": "vllm:num_requests_running{namespace='${namespace}',  pod=~\"$model_name.*\"}",
               "format": "time_series",
               "intervalFactor": 1,
               "legendFormat": "Running Requests",
@@ -1248,7 +1251,7 @@ spec:
                 "uid": "682a2344-305f-4039-b45a-303051728943"
               },
               "editorMode": "code",
-              "expr": "vllm:num_requests_waiting{namespace='${namespace}',  pod=~\"granite.*\"}",
+              "expr": "vllm:num_requests_waiting{namespace='${namespace}',  pod=~\"$model_name.*\"}",
               "hide": false,
               "instant": false,
               "legendFormat": "Waiting Requests",
@@ -1349,7 +1352,7 @@ spec:
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "histogram_quantile(0.99, sum by(le) (rate(vllm:time_to_first_token_seconds_bucket{namespace=\"$namespace\", pod=~\"granite.*\", model_name=\"$model_name\"}[5m])))",
+              "expr": "histogram_quantile(0.99, sum by(le) (rate(vllm:time_to_first_token_seconds_bucket{namespace=\"$namespace\", pod=~\"$model_name.*\", model_name=\"$model_name\"}[5m])))",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": false,
@@ -1366,7 +1369,7 @@ spec:
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "histogram_quantile(0.95, sum by(le) (rate(vllm:time_to_first_token_seconds_bucket{namespace=\"$namespace\", pod=~\"granite.*\", model_name=\"$model_name\"}[5m])))",
+              "expr": "histogram_quantile(0.95, sum by(le) (rate(vllm:time_to_first_token_seconds_bucket{namespace=\"$namespace\", pod=~\"$model_name.*\", model_name=\"$model_name\"}[5m])))",
               "fullMetaSearch": false,
               "includeNullMetadata": false,
               "instant": false,
@@ -1382,7 +1385,7 @@ spec:
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "histogram_quantile(0.9, sum by(le) (rate(vllm:time_to_first_token_seconds_bucket{namespace=\"$namespace\", pod=~\"granite.*\", model_name=\"$model_name\"}[5m])))",
+              "expr": "histogram_quantile(0.9, sum by(le) (rate(vllm:time_to_first_token_seconds_bucket{namespace=\"$namespace\", pod=~\"$model_name.*\", model_name=\"$model_name\"}[5m])))",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": false,
@@ -1399,7 +1402,7 @@ spec:
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "histogram_quantile(0.5, sum by(le) (rate(vllm:time_to_first_token_seconds_bucket{namespace=\"$namespace\", pod=~\"granite.*\", model_name=\"$model_name\"}[5m])))",
+              "expr": "histogram_quantile(0.5, sum by(le) (rate(vllm:time_to_first_token_seconds_bucket{namespace=\"$namespace\", pod=~\"$model_name.*\", model_name=\"$model_name\"}[5m])))",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": false,
@@ -1415,7 +1418,7 @@ spec:
                 "uid": "${datasource}"
               },
               "editorMode": "code",
-              "expr": "rate(vllm:time_to_first_token_seconds_sum{namespace=\"$namespace\", pod=~\"granite.*\", model_name=\"$model_name\"}[$__rate_interval])\n/\nrate(vllm:time_to_first_token_seconds_count{namespace=\"$namespace\", pod=~\"granite.*\", model_name=\"$model_name\"}[$__rate_interval])",
+              "expr": "rate(vllm:time_to_first_token_seconds_sum{namespace=\"$namespace\", pod=~\"$model_name.*\", model_name=\"$model_name\"}[$__rate_interval])\n/\nrate(vllm:time_to_first_token_seconds_count{namespace=\"$namespace\", pod=~\"$model_name.*\", model_name=\"$model_name\"}[$__rate_interval])",
               "hide": false,
               "instant": false,
               "legendFormat": "Average",
@@ -1516,7 +1519,7 @@ spec:
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "histogram_quantile(0.99, sum by(le) (rate(vllm:time_per_output_token_seconds_bucket{namespace=\"$namespace\", pod=~\"granite.*\", model_name=\"$model_name\"}[5m])))",
+              "expr": "histogram_quantile(0.99, sum by(le) (rate(vllm:time_per_output_token_seconds_bucket{namespace=\"$namespace\", pod=~\"$model_name.*\", model_name=\"$model_name\"}[5m])))",
               "fullMetaSearch": false,
               "includeNullMetadata": false,
               "instant": false,
@@ -1532,7 +1535,7 @@ spec:
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "histogram_quantile(0.95, sum by(le) (rate(vllm:time_per_output_token_seconds_bucket{namespace=\"$namespace\", pod=~\"granite.*\", model_name=\"$model_name\"}[5m])))",
+              "expr": "histogram_quantile(0.95, sum by(le) (rate(vllm:time_per_output_token_seconds_bucket{namespace=\"$namespace\", pod=~\"$model_name.*\", model_name=\"$model_name\"}[5m])))",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": false,
@@ -1549,7 +1552,7 @@ spec:
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "histogram_quantile(0.9, sum by(le) (rate(vllm:time_per_output_token_seconds_bucket{namespace=\"$namespace\", pod=~\"granite.*\", model_name=\"$model_name\"}[5m])))",
+              "expr": "histogram_quantile(0.9, sum by(le) (rate(vllm:time_per_output_token_seconds_bucket{namespace=\"$namespace\", pod=~\"$model_name.*\", model_name=\"$model_name\"}[5m])))",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": false,
@@ -1566,7 +1569,7 @@ spec:
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "histogram_quantile(0.5, sum by(le) (rate(vllm:time_per_output_token_seconds_bucket{namespace=\"$namespace\", pod=~\"granite.*\", model_name=\"$model_name\"}[5m])))",
+              "expr": "histogram_quantile(0.5, sum by(le) (rate(vllm:time_per_output_token_seconds_bucket{namespace=\"$namespace\", pod=~\"$model_name.*\", model_name=\"$model_name\"}[5m])))",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": false,
@@ -1582,7 +1585,7 @@ spec:
                 "uid": "${datasource}"
               },
               "editorMode": "code",
-              "expr": "rate(vllm:time_per_output_token_seconds_sum{namespace=\"$namespace\", pod=~\"granite.*\", model_name=\"$model_name\"}[5m])\n/\nrate(vllm:time_per_output_token_seconds_count{namespace=\"$namespace\", pod=~\"granite.*\", model_name=\"$model_name\"}[5m])",
+              "expr": "rate(vllm:time_per_output_token_seconds_sum{namespace=\"$namespace\", pod=~\"$model_name.*\", model_name=\"$model_name\"}[5m])\n/\nrate(vllm:time_per_output_token_seconds_count{namespace=\"$namespace\", pod=~\"$model_name.*\", model_name=\"$model_name\"}[5m])",
               "hide": false,
               "instant": false,
               "legendFormat": "Mean",
@@ -1680,7 +1683,7 @@ spec:
                 "uid": "${datasource}"
               },
               "editorMode": "code",
-              "expr": "vllm:request_success_total{finished_reason=\"length\",namespace=\"$namespace\", pod=~\"granite.*\", model_name=\"$model_name\"}",
+              "expr": "vllm:request_success_total{finished_reason=\"length\",namespace=\"$namespace\", pod=~\"$model_name.*\", model_name=\"$model_name\"}",
               "format": "time_series",
               "instant": false,
               "intervalFactor": 1,
@@ -1693,7 +1696,7 @@ spec:
                 "uid": "${datasource}"
               },
               "editorMode": "code",
-              "expr": "vllm:request_success_total{finished_reason=\"stop\",namespace=\"$namespace\", pod=~\"granite.*\", model_name=\"$model_name\"}",
+              "expr": "vllm:request_success_total{finished_reason=\"stop\",namespace=\"$namespace\", pod=~\"$model_name.*\", model_name=\"$model_name\"}",
               "hide": false,
               "instant": false,
               "legendFormat": "Finished Reason: Stopped",
@@ -1793,7 +1796,7 @@ spec:
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "rate(vllm:prompt_tokens_total{namespace=\"$namespace\", pod=~\"granite.*\", model_name=\"$model_name\"}[5m])",
+              "expr": "rate(vllm:prompt_tokens_total{namespace=\"$namespace\", pod=~\"$model_name.*\", model_name=\"$model_name\"}[5m])",
               "fullMetaSearch": false,
               "includeNullMetadata": false,
               "instant": false,
@@ -1809,7 +1812,7 @@ spec:
               },
               "disableTextWrap": false,
               "editorMode": "builder",
-              "expr": "rate(vllm:generation_tokens_total{namespace=\"$namespace\", pod=~\"granite.*\", model_name=\"$model_name\"}[5m])",
+              "expr": "rate(vllm:generation_tokens_total{namespace=\"$namespace\", pod=~\"$model_name.*\", model_name=\"$model_name\"}[5m])",
               "fullMetaSearch": false,
               "hide": false,
               "includeNullMetadata": false,
@@ -1880,7 +1883,7 @@ spec:
                 "uid": "${datasource}"
               },
               "editorMode": "code",
-              "expr": "sum(vllm:generation_tokens_total{namespace=\"$namespace\", pod=~\"granite.*\", model_name=\"$model_name\"})",
+              "expr": "sum(vllm:generation_tokens_total{namespace=\"$namespace\", pod=~\"$model_name.*\", model_name=\"$model_name\"})",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 1,
@@ -2085,7 +2088,7 @@ spec:
               },
               "disableTextWrap": false,
               "editorMode": "code",
-              "expr": "rate(vllm:request_inference_time_seconds{namespace=\"$namespace\", pod=~\"granite.*\", model_name=\"$model_name\"}[5m])",
+              "expr": "rate(vllm:request_inference_time_seconds{namespace=\"$namespace\", pod=~\"$model_name.*\", model_name=\"$model_name\"}[5m])",
               "fullMetaSearch": false,
               "includeNullMetadata": true,
               "instant": false,
@@ -2161,8 +2164,8 @@ spec:
           },
           {
             "current": {
-              "text": "granite",
-              "value": "granite"
+              "text": "${NAMESPACE}",
+              "value": "${NAMESPACE}"
             },
             "description": "",
             "hide": 1,
@@ -2170,21 +2173,21 @@ spec:
             "options": [
               {
                 "selected": true,
-                "text": "granite",
-                "value": "granite"
+                "text": "${NAMESPACE}",
+                "value": "${NAMESPACE}"
               }
             ],
-            "query": "granite",
+            "query": "${NAMESPACE}",
             "type": "textbox"
           },
           {
             "current": {
-              "text": "granite318b",
-              "value": "granite318b"
+              "text": "${MODEL_NAME}",
+              "value": "${MODEL_NAME}"
             },
             "hide": 2,
             "name": "model_name",
-            "query": "granite318b",
+            "query": "${MODEL_NAME}",
             "skipUrlSync": true,
             "type": "constant"
           }
