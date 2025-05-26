@@ -101,47 +101,37 @@ Notice that the model_name and namespace dashboards variables were updated to th
 
 > The installation will happen in the end of this tutorial.
 
-### Accelerator Metrics
+### Accelerators Metrics
 
 #### Nvidia
 
 - **GPU Utilization**: Tracks the percentage of time the GPU is actively processing tasks, indicating GPU workload levels.
-  - Query: `DCGM_FI_DEV_GPU_UTIL{instance=~"$instance", gpu=~"$gpu"}`
+  - Query: `habanalabs_utilization{instance=~"$instance", gpu=~"$gpu"}`
 - **GPU Power Usage**: GPU Total Power - The SUM of the power read from all sensors
-  Query: `sum(DCGM_FI_DEV_POWER_USAGE{instance=~\"$instance\", gpu=~\"$gpu\"})`
+  Query: `sum(habanalabs_power_mW{instance=~\"$instance\", gpu=~\"$gpu\"})`
 - **GPU Memory Utilization**: Shows memory usage vs free memory, critical for identifying memory bottlenecks in GPU-heavy workloads.
-  - Query: `DCGM_FI_DEV_MEM_COPY_UTIL{instance=~"$instance", gpu=~"$gpu"}`
-  - Sum: `sum(DCGM_FI_DEV_MEM_COPY_UTIL{instance=~"$instance", gpu=~"$gpu"})`
+  - Query: `habanalabs_memory_used_bytes {instance=~"$instance", gpu=~"$gpu"}`
+  - Sum: `sum(habanalabs_memory_used_bytes {instance=~"$instance", gpu=~"$gpu"})`
     - Range: The value is typically a percentage from 0% to 100%.
       - 0%: The memory copy engines are completely idle.
       - 100%: The memory copy engines are fully utilized, meaning they were busy transferring data for the entire sampling period.
     - High Utilization (e.g., close to 100%): This indicates that the GPU is spending a significant amount of its time moving data. This isn't inherently good or bad, but it needs to be considered in context:
-      - If MEM_COPY_UTIL is high while compute utilization (e.g., DCGM_FI_DEV_GPU_UTIL or DCGM_FI_GR_ENGINE_ACTIVE) is low, it could suggest that your application is memory bandwidth bound. The GPU might be waiting for data to arrive or be sent out, rather than performing computations. This could be a bottleneck.
-
+      - If habanalabs_memory_used_bytes  is high while compute utilization (e.g., habanalabs_utilization) is low, it could suggest that your application is memory bandwidth bound. The GPU might be waiting for data to arrive or be sent out, rather than performing computations. This could be a bottleneck.
 - **GPU** Temperature: Ensures the GPU operates within safe thermal limits to prevent hardware degradation.
-  - Query: `DCGM_FI_DEV_GPU_TEMP{instance=~"$instance", gpu=~"$gpu"}`
-  - Avg: `avg(DCGM_FI_DEV_GPU_TEMP{instance=~"$instance", gpu=~"$gpu"})`
+  - Query: `habanalabs_temperature_onchip{instance=~"$instance", gpu=~"$gpu"}`
+  - Avg: `avg(habanalabs_temperature_onchip{instance=~"$instance", gpu=~"$gpu"})`
 - **GPU Throttling**: It occurs when the GPU automatically reduces the clock to avoid damage from overheating
   - Key Metrics to Visualize:
     - GPU Temperature: Monitor the GPU temperature. Throttling often occurs when the GPU reaches a certain temperature (e.g., 85-90°C)2.
     - SM Clock Speed: Observe the core clock speed. A significant drop in the clock speed while the GPU is under load indicates throttling.
-      - `DCGM_FI_DEV_SM_CLOCK{instance=~\"$instance\", gpu=~\"$gpu\"} * 1000000`
+      - `habanalabs_clock_soc_mhz{instance=~\"$instance\", gpu=~\"$gpu\"} * 1000000`
 
-- **CPU-GPU Bottlenecks**: `container_cpu_cfs_throttled_seconds_total` + `DCGM_FI_DEV_GPU_UTIL`: A combination of CPU throttling and GPU usage metrics to identify resource allocation inefficiencies.
+- **CPU-GPU Bottlenecks**: `container_cpu_cfs_throttled_seconds_total` + `habanalabs_utilization`: A combination of CPU throttling and GPU usage metrics to identify resource allocation inefficiencies.
   - If CPU throttling is low and GPU utilization is high, it indicates that the system is well-balanced, with the GPU being fully utilized without CPU constraints. 
   If CPU throttling is high and GPU utilization is low, it indicates a CPU bottleneck. The CPU is unable to keep up with the GPU's processing demands, causing the GPU to remain underutilized. If both metrics are high, it may indicate that the workload is demanding for both CPU and GPU, and you may need to scale up resources.
   - Queries:
     - `sum(rate(container_cpu_cfs_throttled_seconds_total{namespace="$namespace", pod=~"$model_name.*"}[5m])) by (namespace)`
-    - `avg_over_time(DCGM_FI_DEV_GPU_UTIL{instance=~"$instance", gpu=~"$gpu"}[5m])`
-
- 
-    
-- **CPU-GPU Bottlenecks**: `container_cpu_cfs_throttled_seconds_total` + `DCGM_FI_DEV_GPU_UTIL`: A combination of CPU throttling and GPU usage metrics to identify resource allocation inefficiencies.
-  - If CPU throttling is low and GPU utilization is high, it indicates that the system is well-balanced, with the GPU being fully utilized without CPU constraints. 
-  If CPU throttling is high and GPU utilization is low, it indicates a CPU bottleneck. The CPU is unable to keep up with the GPU's processing demands, causing the GPU to remain underutilized. If both metrics are high, it may indicate that the workload is demanding for both CPU and GPU, and you may need to scale up resources.
-  - Queries:
-    - `sum(rate(container_cpu_cfs_throttled_seconds_total{namespace="$namespace", pod=~"$model_name.*"}[5m])) by (namespace)`
-    - `avg_over_time(DCGM_FI_DEV_GPU_UTIL{instance=~"$instance", gpu=~"$gpu"}[5m])`
+    - `avg_over_time(habanalabs_utilization{instance=~"$instance", gpu=~"$gpu"}[5m])`
 
  
 ### vLLM Metrics
@@ -238,7 +228,7 @@ grafana-operator-controller-manager-v5-7df8b7dbbf-lkmhs   1/1     Running       
 ```
 
 Now, we need to configure the service account so Grafana can query the `Thanos` endpoint.
-To do that, apply the content from [service account role binding](../common-assets/sa-rb.yaml)
+To do that, apply the content from [service account role binding](assets/sa-rb.yaml)
 
 This will:
 - create the service account `grafana-sa`
@@ -313,7 +303,7 @@ oc -n openshift-user-workload-monitoring get GrafanaDatasource -oyaml
 Last but not least, let's install the GPU & vLLM metrics Dashboard.
 All the metrics are together in the same dashboard for easy view.
 ```bash
-oc apply -f /tmp/vllm-gpu-metrics-dashboard.yaml-replaced.yaml # This is the temproary versions with the applied configuration
+oc apply -f ../common-assets/vllm-gpu-metrics-dashboard.yaml
 ```
 
 This will install one dashboard with 3 subsections:
