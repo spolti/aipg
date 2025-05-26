@@ -16,3 +16,6 @@ spec:
         path: onnx/mnist.onnx
         parameters: # Parameters to override the default values inside the common secret.
           bucket: modelmesh-example-models
+
+
+# for kserve use path: openvino/mnist/
