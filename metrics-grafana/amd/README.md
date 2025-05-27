@@ -6,6 +6,114 @@ At this point, it is assumed that you already have the Red Hat OpenShift AI plat
 You can follow the steps described in the [Granite-vLLM](../../Granite-vLLM/README.md) directory to install a LLM for testing.
 
 
+# Enabling AMD Accelerator metrics exporter
+
+
+> Note: The prometheus integration is available in the 1.2.2 operator version.
+
+After deploying the AMD GPU Operator, make sure that the `DeviceConfig` has:
+
+```yaml
+  metricsExporter:
+    enable: true
+    image: 'rocm/device-metrics-exporter:v1.2.1' # be sure to usa the same version than the installed operator,
+    nodePort: 32500
+    port: 5000
+    serviceType: NodePort
+    prometheus:
+      serviceMonitor:
+        enable: true
+        interval: "60s" # Scrape frequency
+        attachMetadata:
+          node: true
+        honorLabels: false
+        honorTimestamps: true
+        labels:
+          release: prometheus-operator # Prometheus release label for target discovery, this is the default for openshift cluster
+```
+
+Once done, check if the metrics exporter is deployed:
+
+```bash
+c get pods -n kube-amd-gpu -l "app.kubernetes.io/name=metrics-exporter"
+NAME                                          READY   STATUS    RESTARTS   AGE
+dc-internal-registry-metrics-exporter-9sm27   1/1     Running   0          5d22h
+dc-internal-registry-metrics-exporter-xqhbb   1/1     Running   0          6d6h
+```
+
+Note, `dc-internal-registry` is the name of the `DeviceConfig` resource mentioned above.
+Next, make sure that the pod are exporting the metrics, by accessing its terminal and running the following command:
+```bash
+oc rsh  -n kube-amd-gpu pod/dc-internal-registry-metrics-exporter-xqhbb
+...
+sh-5.1# curl http://localhost:5000/metrics
+# it should return a bunch of metrics
+```
+
+This shoulld enough.
+
+## For older versions
+For older versions of the operator, you can follow the steps described below:
+1. Go to the `kube-amd-gpu` namespace, then services.
+
+As the service is namaged by the operator, any change on it will be removed, so create a new service with this content:
+```yaml
+oc apply -f - <<EOF
+kind: Service
+apiVersion: v1
+metadata:
+  name: example
+  namespace: kube-amd-gpu
+  labels:
+    service-name: my-dc-internal-registry-metrics-exporter
+spec:
+  ports:
+    - name: http
+      protocol: TCP
+      port: 5000
+      targetPort: 5000
+      nodePort: 32501 # change it if you get error about por already in use
+  internalTrafficPolicy: Cluster
+  type: NodePort
+  selector:
+    # make sure these labes exists in the metrics exporter pods
+    app.kubernetes.io/name: metrics-exporter 
+    daemonset-name: dc-internal-registry
+EOF
+```
+
+
+
+Then create the `ServiceMonitor`
+```yaml
+oc apply -f - <<EOF
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: amd-gpu-metrics-exporter
+  namespace: kube-amd-gpu
+  # labels:
+  #   release: prometheus-operator  # This should match your Prometheus operator's label selector
+spec:
+  selector:
+    matchLabels:
+      service-name: my-dc-internal-registry-metrics-exporter #it should be the service name, as by default the exporter for older version dosn't add labels to it.
+  namespaceSelector:
+    matchNames:
+      - kube-amd-gpu
+  endpoints:
+    - targetPort: "32501"  # This matches your service port
+      interval: 30s
+      path: /metrics
+      scheme: http
+      port: http
+EOF
+```
+
+Install it manually by copying and paste the command above.
+A few seconds later, the target for the AMD metrics should be available in the OpenShift's Observing console.
+
+
 ## Metrics
 
 The `namespace` and `model_name` are variables defined inside the board, and it is defined as:
