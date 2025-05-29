@@ -5,6 +5,16 @@ metadata:
   name: grafana-sa
   namespace: openshift-user-workload-monitoring
 ---
+# service account token secret
+apiVersion: v1
+kind: Secret
+metadata:
+  name: grafana-sa-token
+  namespace: openshift-user-workload-monitoring
+  annotations:
+    kubernetes.io/service-account.name: grafana-sa
+type: kubernetes.io/service-account-token
+---
 # cluster role binding
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding

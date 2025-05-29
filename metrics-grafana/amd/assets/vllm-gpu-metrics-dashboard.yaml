@@ -19,7 +19,7 @@ spec:
               "uid": "grafana"
             },
             "enable": true,
-            "hide": true
+            "hide": true,
             "iconColor": "rgba(0, 211, 255, 1)",
             "name": "Annotations & Alerts",
             "type": "dashboard"
@@ -48,7 +48,7 @@ spec:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "682a2344-305f-4039-b45a-303051728943"
+            "uid": "${datasource}"
           },
           "description": "GPU Current Temperature",
           "fieldConfig": {
@@ -138,7 +138,7 @@ spec:
                 "uid": "$datasource"
               },
               "editorMode": "code",
-              "expr": "GPU_JUNCTION_TEMPERATURE{instance=~\"$instance\", gpu=~\"$gpu\"}",
+              "expr": "gpu_junction_temperature{instance=~\"$instance\", gpu=~\"$gpu\"}",
               "instant": false,
               "interval": "",
               "legendFormat": "GPU {{gpu}}",
@@ -213,7 +213,7 @@ spec:
                 "uid": "${datasource}"
               },
               "editorMode": "code",
-              "expr": "avg(GPU_JUNCTION_TEMPERATURE{instance=~\"$instance\", gpu=~\"$gpu\"})",
+              "expr": "avg(gpu_junction_temperature{instance=~\"$instance\", gpu=~\"$gpu\"})",
               "format": "time_series",
               "instant": false,
               "intervalFactor": 1,
@@ -319,7 +319,7 @@ spec:
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "GPU_CLOCK{instance=~\"$instance\", gpu=~\"$gpu\"} * 1000000",
+              "expr": "gpu_clock{instance=~\"$instance\", gpu=~\"$gpu\"} * 1000000",
               "format": "time_series",
               "instant": false,
               "interval": "",
@@ -425,7 +425,7 @@ spec:
                 "uid": "$datasource"
               },
               "editorMode": "code",
-              "expr": "GPU_PACKAGE_POWER{instance=~\"$instance\", gpu=~\"$gpu\"}",
+              "expr": "gpu_package_power{instance=~\"$instance\", gpu=~\"$gpu\"}",
               "instant": false,
               "interval": "",
               "legendFormat": "GPU {{gpu}}",
@@ -506,7 +506,7 @@ spec:
                 "uid": "${datasource}"
               },
               "editorMode": "code",
-              "expr": "sum(GPU_PACKAGE_POWER{instance=~\"$instance\", gpu=~\"$gpu\"})",
+              "expr": "sum(gpu_package_power{instance=~\"$instance\", gpu=~\"$gpu\"})",
               "format": "time_series",
               "instant": true,
               "legendFormat": "{{name}} ({{condition}})",
@@ -610,7 +610,7 @@ spec:
               "datasource": {
                 "uid": "$datasource"
               },
-              "expr": "GPU_GFX_ACTIVITY{instance=~\"$instance\", gpu=~\"$gpu\"}",
+              "expr": "gpu_gfx_activity{instance=~\"$instance\", gpu=~\"$gpu\"}",
               "interval": "",
               "legendFormat": "GPU {{gpu}}",
               "refId": "A"
@@ -622,7 +622,7 @@ spec:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "682a2344-305f-4039-b45a-303051728943"
+            "uid": "${datasource}"
           },
           "description": "If CPU throttling is low and GPU utilization is high, it indicates that the system is well-balanced, with the GPU being fully utilized without CPU constraints. \n  If CPU throttling is high and GPU utilization is low, it indicates a CPU bottleneck. The CPU is unable to keep up with the GPU's processing demands, causing the GPU to remain underutilized. If both metrics are high, it may indicate that the workload is demanding for both CPU and GPU, and you may need to scale up resources.",
           "fieldConfig": {
@@ -713,7 +713,7 @@ spec:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "682a2344-305f-4039-b45a-303051728943"
+                "uid": "${datasource}"
               },
               "editorMode": "code",
               "expr": "sum(rate(container_cpu_cfs_throttled_seconds_total{namespace=\"$namespace\", pod=~\"$model_name.*\"}[5m])) by (namespace)",
@@ -727,10 +727,10 @@ spec:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "682a2344-305f-4039-b45a-303051728943"
+                "uid": "${datasource}"
               },
               "editorMode": "code",
-              "expr": "avg(GPU_GFX_ACTIVITY{instance=~\"$instance\", gpu=~\"$gpu\"})",
+              "expr": "avg(gpu_gfx_activity{instance=~\"$instance\", gpu=~\"$gpu\"})",
               "hide": false,
               "instant": false,
               "legendFormat": "GPU {{gpu}}",
@@ -869,7 +869,7 @@ spec:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "682a2344-305f-4039-b45a-303051728943"
+            "uid": "${datasource}"
           },
           "description": "Tracks the percentage of GPU memory used by the vLLM model, providing insights into memory efficiency.\n\n24 Hours sum over time.",
           "fieldConfig": {
@@ -953,7 +953,7 @@ spec:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "682a2344-305f-4039-b45a-303051728943"
+                "uid": "${datasource}"
               },
               "editorMode": "code",
               "expr": "sum_over_time(vllm:gpu_cache_usage_perc{namespace=\"${namespace}\",pod=~\"$model_name.*\"}[24h])",
@@ -965,7 +965,7 @@ spec:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "682a2344-305f-4039-b45a-303051728943"
+                "uid": "${datasource}"
               },
               "editorMode": "code",
               "expr": "sum_over_time(vllm:cpu_cache_usage_perc{namespace=\"${namespace}\",pod=~\"$model_name.*\"}[24h])",
@@ -1149,7 +1149,7 @@ spec:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "682a2344-305f-4039-b45a-303051728943"
+            "uid": "${datasource}"
           },
           "description": "Running Requests: The number of requests actively being processed; helps monitor workload concurrency.\n\nX \n\nWaiting Requests: Tracks requests in the queue, indicating system saturation.\n",
           "fieldConfig": {
@@ -1232,7 +1232,7 @@ spec:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "682a2344-305f-4039-b45a-303051728943"
+                "uid": "${datasource}"
               },
               "editorMode": "code",
               "expr": "vllm:num_requests_running{namespace='${namespace}',  pod=~\"$model_name.*\"}",
@@ -1245,7 +1245,7 @@ spec:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "682a2344-305f-4039-b45a-303051728943"
+                "uid": "${datasource}"
               },
               "editorMode": "code",
               "expr": "vllm:num_requests_waiting{namespace='${namespace}',  pod=~\"$model_name.*\"}",
@@ -2127,12 +2127,12 @@ spec:
               ]
             },
             "datasource": "$datasource",
-            "definition": "label_values(GPU_JUNCTION_TEMPERATURE,instance)",
+            "definition": "label_values(gpu_junction_temperature,instance)",
             "includeAll": true,
             "multi": true,
             "name": "instance",
             "options": [],
-            "query": "label_values(GPU_JUNCTION_TEMPERATURE,instance)",
+            "query": "label_values(gpu_junction_temperature,instance)",
             "refresh": 1,
             "regex": "",
             "sort": 1,
@@ -2148,12 +2148,12 @@ spec:
               ]
             },
             "datasource": "$datasource",
-            "definition": "label_values(GPU_JUNCTION_TEMPERATURE,gpu)",
+            "definition": "label_values(gpu_junction_temperature,gpu)",
             "includeAll": true,
             "multi": true,
             "name": "gpu",
             "options": [],
-            "query": "label_values(GPU_JUNCTION_TEMPERATURE,gpu)",
+            "query": "label_values(gpu_junction_temperature,gpu)",
             "refresh": 1,
             "regex": "",
             "sort": 1,

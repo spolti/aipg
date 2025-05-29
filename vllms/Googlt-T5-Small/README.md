@@ -1,4 +1,4 @@
-# Deploy Granite on OpendataHub with Grafana Dashboard for GPU and vLLM metrics
+# Deploy Google T5 Small on OpendataHub with Grafana Dashboard for GPU and vLLM metrics
 
 # Requirements:
 
@@ -15,7 +15,6 @@ Deploy ODH in Serverless mode, to do this install these operators in order:
 * Red Hat OpenShift Serverless
 * Authorino (required only if you want to have authentication enabled for inference requests)
 * Open Data Hub Operator (at the time of this writing, the version 2.22.0)
-
 
 
 Plus, it will require GPU, make sure you have it available in your cluster.
@@ -177,8 +176,9 @@ Now, let's prepare the OCI image by creating a image. This is a multistep contai
 
 ```
 podman build --format=oci --arch x86_64 --squash \
-  --build-arg repo_id=ibm-granite/granite-3.1-8b-instruct \
-  -t quay.io/spolti/granite-3.1-8b:instruct .
+  --build-arg repo_id=google-t5/t5-small \
+  --build-arg token=<HUGGINGFACE_TOKEN> \
+  -t quay.io/spolti/t5-small:1 .
 ```
 
 Remember to update the registry address to fir your needs.
@@ -202,6 +202,8 @@ oc get serviceaccount default -o yaml
 ```
 
 > Remember to update the `serviceaccount` name to match your needs.
+
+#### TODO rework the pieces below to t5 model
 
 
 ## Deploying the Inference Service

@@ -148,7 +148,6 @@ The `namespace` and `model_name` are variables defined inside the board, and it 
             "skipUrlSync": true,
             "type": "constant"
           }
-        ]
 ```
 
 Note, these needs to be updated before or after the deployment, to update it follow the steps below:
@@ -158,8 +157,11 @@ We will use the `envsubst` command to replace the variables in the JSON string w
 ```bash
 # the following command reads the environment variables from the inputs.env file and exports them to the current shell
 # so it can be used by the envsubst command
-export $(cat inputs.env | xargs)
-envsubst '${NAMESPACE} ${MODEL_NAME}' < vllm-gpu-metrics-dashboard.yaml > /tmp/vllm-gpu-metrics-dashboard.yaml-replaced.yaml
+export $(cat ../common-assets/inputs.env | xargs)
+# check the envs:
+echo $NAMESPACE
+echo $MODEL_NAME
+envsubst '${NAMESPACE} ${MODEL_NAME}' < assets/vllm-gpu-metrics-dashboard.yaml > /tmp/vllm-gpu-metrics-dashboard.yaml-replaced.yaml
 ```
 
 As example, the `inputs.env` file contains this values:
@@ -312,11 +314,13 @@ It might be available when we upgrade the vllm server.
 
 ## Deploying the Grafana operator
 
-For this tutorial we will be using the `nopenshift-user-workload-monitoring` namespace to configure Grafana and deploy the Dashboard.
+For this tutorial we will be using the `openshift-user-workload-monitoring` namespace to configure Grafana and deploy the Dashboard.
 
 Execute the Grafana operator using the [deploy-grafana-operator.yaml](../common-assets/deploy-grafana-operator.yaml).
 ```bash
 oc apply -f ../common-assets/deploy-grafana-operator.yaml
+
+Note, if the operator installation does not install, proceed with the OLM catalog in the OpenShift Console.
 
 # watch the pods and wait until the grafana ones are running:
 oc get pods -nopenshift-user-workload-monitoring -w
@@ -335,11 +339,24 @@ grafana-operator-controller-manager-v5-7df8b7dbbf-lkmhs   0/1     Running       
 grafana-operator-controller-manager-v5-7df8b7dbbf-lkmhs   1/1     Running             0          10s
 ```
 
+
+### Grafana Deployment
+Now, we can proceed and create the Grafana deployment to serve our needs:
+
+```bash
+oc apply -f ../common-assets/grafana-deployment.yaml
+# check if the deployment is ready:
+oc get grafana -n openshift-user-workload-monitoring
+# if it failed, add -oyaml to the previous command for more detailed messages
+```
+
 Now, we need to configure the service account so Grafana can query the `Thanos` endpoint.
 To do that, apply the content from [service account role binding](../common-assets/sa-rb.yaml)
 
 This will:
 - create the service account `grafana-sa`
+  - For newer version, the grafana-sa service account is already created.
+- Create the sercret token for the service account
 - assign the `cluster-monitoring-view` to the service account just created.
 
 ```bash
@@ -373,14 +390,7 @@ EOF
 oc get secret credentials -oyaml -n openshift-user-workload-monitoring
 ```
 
-Now, we can proceed and create the Grafana deployment to serve our needs:
 
-```bash
-oc apply -f ../common-assets/grafana-deployment.yaml
-# check if the deployment is ready:
-oc get grafana -n openshift-user-workload-monitoring
-# if it failed, add -oyaml to the previous command for more detailed messages
-```
 
 Now we need to expose it. By default the service name should be `grafana-service`, confirm with the following command:
 ```bash
@@ -413,6 +423,8 @@ All the metrics are together in the same dashboard for easy view.
 ```bash
 oc apply -f /tmp/vllm-gpu-metrics-dashboard.yaml-replaced.yaml # This is the temproary versions with the applied configuration
 ```
+
+If the Dashboard isn't deployed, inspect the `grafana-operator-controller-manager` logs.
 
 This will install one dashboard with 3 subsections:
 
