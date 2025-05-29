@@ -42,7 +42,7 @@ spec:
           },
           "id": 53,
           "panels": [],
-          "title": "Nvidia Accelerator",
+          "title": "Intel Gaudi Accelerator",
           "type": "row"
         },
         {

@@ -42,7 +42,7 @@ spec:
           },
           "id": 53,
           "panels": [],
-          "title": "Nvidia Accelerator",
+          "title": "AMD Accelerator",
           "type": "row"
         },
         {
