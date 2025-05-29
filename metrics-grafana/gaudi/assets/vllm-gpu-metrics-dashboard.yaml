@@ -2108,7 +2108,7 @@ spec:
           {
             "current": {
               "text": "Prometheus",
-              "value": "682a2344-305f-4039-b45a-303051728943"
+              "uid": "${datasource}"
             },
             "name": "datasource",
             "options": [],

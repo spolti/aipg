@@ -138,7 +138,7 @@ spec:
                 "uid": "$datasource"
               },
               "editorMode": "code",
-              "expr": "gpu_junction_temperature{instance=~\"$instance\", gpu=~\"$gpu\"}",
+              "expr": "gpu_junction_temperature",
               "instant": false,
               "interval": "",
               "legendFormat": "GPU {{gpu}}",
@@ -213,7 +213,7 @@ spec:
                 "uid": "${datasource}"
               },
               "editorMode": "code",
-              "expr": "avg(gpu_junction_temperature{instance=~\"$instance\", gpu=~\"$gpu\"})",
+              "expr": "avg(gpu_junction_temperature{hostname=~\"$instance\", gpu_id=~\"$gpu\"})",
               "format": "time_series",
               "instant": false,
               "intervalFactor": 1,
@@ -335,7 +335,7 @@ spec:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "682a2344-305f-4039-b45a-303051728943"
+            "uid": "${datasource}"
           },
           "description": "GPU Current Power Usage",
           "fieldConfig": {
@@ -1978,7 +1978,7 @@ spec:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "edx8memhpd9tsa"
+                "uid": "${datasource}"
               },
               "disableTextWrap": false,
               "editorMode": "code",
@@ -2081,7 +2081,7 @@ spec:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "edx8memhpd9tsa"
+                "uid": "${datasource}"
               },
               "disableTextWrap": false,
               "editorMode": "code",
@@ -2108,7 +2108,7 @@ spec:
           {
             "current": {
               "text": "Prometheus",
-              "value": "682a2344-305f-4039-b45a-303051728943"
+              "value": "${datasource}"
             },
             "name": "datasource",
             "options": [],
