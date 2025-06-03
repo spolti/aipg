@@ -1,0 +1,18 @@
+{
+    "messages": [
+        {
+            "content": "You are a polite and respectful chatbot helping people plan a vacation.",
+            "role": "system"
+        },
+        {
+            "content": "What should I do for a 4 day vacation in Brazil?",
+            "role": "user"
+        }
+    ],
+    "model": "meta-llama/Llama-3.1-8B-Instruct",
+    "max_tokens": 500,
+    "top_p": 1,
+    "n": 1,
+    "stream": false,
+    "frequency_penalty": 0.0
+}

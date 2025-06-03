@@ -17,7 +17,6 @@ Deploy ODH in Serverless mode, to do this install these operators in order:
 * Open Data Hub Operator (at the time of this writing, the version 2.22.0)
 
 
-
 Plus, it will require GPU, make sure you have it available in your cluster.
 
 You should have these operators installed:
@@ -145,9 +144,12 @@ oc process -n opendatahub -o yaml vllm-cuda-runtime-template | oc apply -f -
 ```
 For AMD:
 ```bash
-oc process -n opendatahub -o yaml  vllm-rocm-runtime-template | oc apply -f -
+oc process -n opendatahub -o yaml vllm-rocm-runtime-template | oc apply -f -
 ```
-
+For Intel Gaudi:
+```bash
+oc process -n opendatahub -o yaml vllm-gaudi-runtime-template | oc apply -f -
+```
 
 Check if it was installed:
 
@@ -167,7 +169,7 @@ As vLLM models tends to be big, we will be using the OCI feature, which consists
 As first step, make sure the OCI feature is enabled (it should be enabled by default):
 
 ```bash
- oc get cm/inferenceservice-config -n opendatahub -oyaml | grep enableModelcar
+oc get cm/inferenceservice-config -n opendatahub -oyaml | grep enableModelcar
 ...
         "enableModelcar": true
 ```
