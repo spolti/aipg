@@ -1,0 +1,24 @@
+apiVersion: perses.dev/v1alpha1
+kind: Perses
+metadata:
+  name: perses
+  namespace: monitoring
+spec:
+  image: docker.io/persesdev/perses:v0.50.3
+  replicas: 1
+  config:
+    database:
+      file:
+        folder: "/perses"
+    plugin:
+      path: "/perses/plugins"
+    schemas:
+      panels_path: "/etc/perses/cue/schemas/panels"
+      queries_path: "/etc/perses/cue/schemas/queries"
+      datasources_path: "/etc/perses/cue/schemas/datasources"
+      variables_path: "/etc/perses/cue/schemas/variables"
+    ephemeral_dashboard:
+      enable: false
+      cleanup_interval: "1s"
+  replicas: 1
+  containerPort: 8080
