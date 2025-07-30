@@ -76,7 +76,7 @@ TOKEN=$(oc -n monitoring get secret $SECRET_NAME --template='{{ .data.token | ba
 With the Token ready, let's store it into a secret so we can use it in the next step:
 ```bash
 oc apply -f - <<EOF
-kind: Secret
+kind: Secretzz
 apiVersion: v1
 metadata:
   name: credentials
