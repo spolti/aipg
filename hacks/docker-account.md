@@ -76,7 +76,7 @@ Assuming your secret is named `regcred` and your namespace is `default`:
 ```sh
 kubectl patch serviceaccount default \
   -p '{"imagePullSecrets": [{"name": "regcred"}]}' \
-  -n default
+  -n kserve
 ```
 
 - Replace `default` after `-n` with your target namespace if needed.
@@ -130,3 +130,8 @@ kubectl describe secret <secret-name> -n <namespace>
 | 5    | `kubectl get/describe secret ...` | Verify secret creation |
 
 ---
+
+
+oc get secret -n openshift-config pull-secret -o template='{{index .data ".dockerconfigjson"}}' | base64 --decode | jq > image-pull-secret.json
+# add docker auth 
+oc set data secret -n openshift-config pull-secret --from-file=.dockerconfigjson=image-pull-secret.json

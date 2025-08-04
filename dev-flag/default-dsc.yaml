@@ -1,6 +1,22 @@
+kind: DataScienceCluster
+apiVersion: datasciencecluster.opendatahub.io/v1
+metadata:
+  labels:
+    app.kubernetes.io/created-by: opendatahub-operator
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: datasciencecluster
+    app.kubernetes.io/part-of: opendatahub-operator
+  name: default-dsc
 spec:
   components:
     codeflare:
+      managementState: Removed
+    dashboard:
+      managementState: Removed
+    datasciencepipelines:
+      managementState: Removed
+    feastoperator:
       managementState: Removed
     kserve:
       devFlags:
@@ -10,26 +26,31 @@ spec:
             uri: 'https://github.com/spolti/kserve/tarball/test1234'
           - contextDir: config
             sourcePath: ''
-            uri: 'https://github.com/spolti/odh-model-controller/tarball/test1234'          
+            uri: 'https://github.com/spolti/odh-model-controller/tarball/test1234'    
       managementState: Managed
+      nim:
+        managementState: Managed
+      rawDeploymentServiceConfig: Headed
       serving:
         ingressGateway:
           certificate:
-            secretName: knative-serving-cert
-            type: SelfSigned
+            type: OpenshiftDefaultIngress
         managementState: Managed
         name: knative-serving
-    trustyai:
-      managementState: Removed
-    ray:
-      managementState: Removed
     kueue:
       managementState: Removed
-    workbenches:
-      managementState: Managed
-    dashboard:
-      managementState: Managed
+    llamastackoperator:
+      managementState: Removed
     modelmeshserving:
       managementState: Removed
-    datasciencepipelines:
+    modelregistry:
+      managementState: Removed
+      registriesNamespace: odh-model-registries
+    ray:
+      managementState: Removed
+    trainingoperator:
+      managementState: Removed
+    trustyai:
+      managementState: Removed
+    workbenches:
       managementState: Removed
