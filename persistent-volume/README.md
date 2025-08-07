@@ -1,6 +1,10 @@
-# Persisten Volume
+## Persistent Volume examples
 
-This directory contains a few examples on how to create Persistent Volume using hostpath and dynamic pvc.
+Examples for creating Persistent Volumes and Claims (hostPath and dynamic PVCs).
 
-The `full-example.yaml` file can be edited to change the PV type.
+- `full-example.yaml`: End-to-end example; edit to switch PV type.
+- `pv-for-hostpath.yaml`: HostPath PV.
+- `pvc-dynamic.yaml`: Dynamic ReadWriteOnce PVC.
+- `pvc-dynamic-read-only-many.yaml`: Dynamic ReadOnlyMany PVC.
+- `pvc-for-hostpath.yaml`: PVC bound to a HostPath PV.
 

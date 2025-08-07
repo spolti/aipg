@@ -6,7 +6,7 @@ To follow this example you will need:
 
 * Running OCP Cluster with GPU available
 * `oc` or `kubectl` command line tools to interact with the OCP Server
-* `Podman` or `Docker` Continer Engine
+* `Podman` or `Docker` Container Engine
 
 ## Required Operators
 Deploy ODH in Serverless mode, to do this install these operators in order:
@@ -24,21 +24,21 @@ You should have these operators installed:
 ![Installed Operators](images/operators.png)
 
 
-## Configuring OpendataHub Environment
+## Configuring OpenDataHub environment
 
-As next step, let's configure the the ODH operator, to do that, we need to provide two resources:
+As next step, configure the ODH operator by providing two resources:
 
 
 * The Data Science Cluster Initialization (DSCI)
   * The Operator configuration
 * The Data Science Cluster (DSC)
-  * THe component's configuration, e.g. defines which components will be enabled. For this example we will use the following:
+  * The component configuration. For this example we will use the following:
     * Dashboard (optional)
       * For this example, everything will be deploy manually, with no Dashboard enabled.
     * KServe
 
 
-The DSCI will looks like (Default configuration):
+The DSCI will look like (default configuration):
 
 ```yaml
 kind: DSCInitialization
@@ -67,7 +67,7 @@ spec:
     managementState: Managed
 ```
 
-Install it and wait the installation to finish, next proceed with the DSC as follows:
+Install it and wait for the installation to finish. Next, proceed with the DSC:
 
 The DSC:
 
@@ -117,7 +117,7 @@ spec:
       managementState: Removed
 ```
 
-Install it and wait it to get ready. Execute the command below to see the installation status:
+Install it and wait for it to get ready. Execute the command below to see the installation status:
 
 ```bash
 oc get pods -n opendatahub --watch
@@ -128,12 +128,12 @@ odh-dashboard-7b794bb564-txg5v              2/2     Running   0          68s
 odh-model-controller-754f494b86-bfm78       1/1     Running   0          69s
 ```
 
-KServe, Dashboard and odh-model-controller should be in the running state, If you en counter problems, check the logs of the `opendatahub-operator` in the `openshift-operators` namespace.
+KServe, Dashboard and odh-model-controller should be in the running state. If you encounter problems, check the logs of the `opendatahub-operator` in the `openshift-operators` namespace.
 
 
-## Configuring the Runtime.
+## Configuring the runtime
 
-For this example, we will be using the default Runtime for vLLM provided by the ODH Model Controller, can be found [here](https://github.com/opendatahub-io/odh-model-controller/blob/incubating/config/runtimes/vllm-template.yaml) as template.
+For this example, we will use the default runtime for vLLM provided by the ODH Model Controller, available as a template [here](https://github.com/opendatahub-io/odh-model-controller/blob/incubating/config/runtimes/vllm-template.yaml).
 
 Use this command to install the Serving Runtime:
 
@@ -166,13 +166,13 @@ As vLLM models tends to be big, we will be using the OCI feature, which consists
 As first step, make sure the OCI feature is enabled (it should be enabled by default):
 
 ```bash
- oc get cm/inferenceservice-config -n opendatahub -oyaml | grep enableModelcar
+  oc get cm/inferenceservice-config -n opendatahub -oyaml | grep enableModelcar
 ...
         "enableModelcar": true
 ```
 It will print some other content, but the last line is the important one, that should be `true`.
 
-Now, let's prepare the OCI image by creating a image. This is a multistep container that will download the model and copy to the OCI container. Inspect the [Containerfile](Containerfile)
+Now, build the OCI image. This multi-stage build downloads the model into the image. Inspect the [Containerfile](Containerfile).
 
 ```
 podman build --format=oci --arch x86_64 --squash \
@@ -181,11 +181,11 @@ podman build --format=oci --arch x86_64 --squash \
   -t quay.io/spolti/t5-small:1 .
 ```
 
-Remember to update the registry address to fir your needs.
+Remember to update the registry to fit your needs.
 
 Then push it to your preferred registry.
 
-**Tip**: If the registry requires auth, there is a neew to configure a pull secret.
+**Tip**: If the registry requires auth, configure a pull secret.
 Example:
 ```bash
 oc create secret docker-registry quay-pull-secret \
@@ -201,22 +201,22 @@ oc secrets link default quay-pull-secret --for=pull
 oc get serviceaccount default -o yaml
 ```
 
-> Remember to update the `serviceaccount` name to match your needs.
+> Remember to update the `serviceAccount` name if you use a different one.
 
 #### TODO rework the pieces below to t5 model
 
 
-## Deploying the Inference Service
+## Deploying the InferenceService
 
 Now it is time to deploy the Model and start sending requests to it.
 
-Use [inference service](inference-service.yaml) to deploy it.
+Use [inference-service](inference-service.yaml) to deploy it.
 
 ```bash
 oc apply -f inference-service.yaml
 ```
 
-**Tip:** If you used a different example image, update the yaml to reflect it.
+**Tip:** If you used a different image, update the YAML accordingly.
 
 Check the deployment status:
 ```bash
@@ -224,8 +224,8 @@ oc get pods -n granite --watch
 NAME                                                      READY   STATUS     RESTARTS   AGE
 granite318b-predictor-00001-deployment-66b9d596bf-zsnhx   0/3     Init:0/1   0          2m26s
 ```
-Wait until it gets ready, this might take a while since the model is a little bit large.
-If for some reason the status don't change to `Init:0/1` and stays on `Pending`, check out the events for possible hints:
+Wait until it gets ready. This might take a while since the model is large.
+If the status does not change to `Init:0/1` and stays `Pending`, check events for hints:
 ```bash
 oc get events -n granite
 ```

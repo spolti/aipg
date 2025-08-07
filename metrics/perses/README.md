@@ -1,11 +1,11 @@
 # Perses example
 
-This example aims to create a the Metrics Dashboards defined in this repository for Grafana using Perses, which is a dashboard tool to display observability data.
+This example creates dashboards using Perses, a dashboard tool to display observability data.
 
 This example will demonstrate how to install and configure it on OpenShift Cluster.
 
 - It can be installed by installing the Cluster Observability Operator (COO), available in the Operator Hub
-![COO-perator](assets/images/coo-poerator.png)
+![COO-operator](assets/images/coo-operator.png)
 
 
 Once the operator is ready, the first step is:
@@ -28,13 +28,13 @@ oc create route edge perses --service=perses --port=8080 --insecure-policy=Allow
 HOST=$(oc get routes -n monitoring -o jsonpath='{.items[*].spec.host}')
 ```
 
-- log in with `percli` - this step is not mandatory, it is useful if you need to migrate a grafana dashboard
+- Log in with `percli` (optional, useful to migrate Grafana dashboards)
 ```
 # use the exposed route from the previous command:
 percli login http://$HOST
 ```
 
-- Deploy the test dashboard to make sure it is working properly:
+- Deploy a test dashboard to make sure it is working properly:
 ```bash
 oc create of  -f assets/perses-dashboard-example.yaml
 # then check if it is working
@@ -51,12 +51,12 @@ Events:                    <none>
 ```
 <1> - it should be true.
 
-Now we need to create the `PersesDataSource`, for this, we we need to configure the service account so Grafana can query the `Thanos` endpoint.To do that, apply the content from [service account role binding](./assets/sa-rb.yaml)
+Now we need to create the `PersesDataSource`. First configure the service account so Perses can query the `Thanos` endpoint. Apply the content from [service account role binding](./assets/sa-rb.yaml)
 
 This will:
 - create the service account `perses-sa`
-  - For newer version, the grafana-sa service account is already created.
-- Create the sercret token for the service account
+  - For newer versions, the `perses-sa` service account may already exist.
+ - Create the secret token for the service account
 - assign the `cluster-monitoring-view` to the service account just created.
 
 ```bash
@@ -64,7 +64,7 @@ oc apply -f assets/sa-rb.yaml
 ```
 
 Now, let's get the `serviceAccount` token and store in a secret:
-```Bash
+```bash
 SECRET_NAME=$(oc -n monitoring describe sa perses-sa | awk '/Tokens/{ print $2 }')
 # echo $SECRET_NAME
 # grafana-sa-token-zsx9b
@@ -73,15 +73,14 @@ TOKEN=$(oc -n monitoring get secret $SECRET_NAME --template='{{ .data.token | ba
 # eyJhbGciOiJSUzI1NiIsI.....
 ```
 
-With the Token ready, let's store it into a secret so we can use it in the next step:
+With the token ready, store it into a secret for the next step:
 ```bash
 oc apply -f - <<EOF
-kind: Secretzz
+kind: Secret
 apiVersion: v1
 metadata:
   name: credentials
   namespace: monitoring
-stringData:
 stringData:
   authorization: Bearer ${TOKEN}
 type: Opaque
@@ -91,15 +90,15 @@ EOF
 oc get secret credentials -oyaml -n monitoring
 ```
 
-At this point, let's create the `PersesDatasource`
+At this point, create the `PersesDatasource`:
 ```
 oc create -f assets/perses-datasource.yaml
 ```
 
 
-## Migrating Grafana Dashboards
+## Migrating Grafana dashboards
 
-For Nvidia we have a grafa dashboard that will be used to configure the Perses dashboard.
+For NVIDIA we have a Grafana dashboard that can be converted to a Perses dashboard.
 To proceed, install `percli`, more information [here](https://perses.dev/perses/docs/cli/)
 
 - Convert from Grafana to Perses

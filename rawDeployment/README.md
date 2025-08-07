@@ -8,13 +8,13 @@ Create a namespace:
 oc new-project hugging
 ```
 
-Now we need to apply the `vllm` tempalte in order to be able to deploy models from HuggingFace:
+Now we need to apply the `vllm` template in order to deploy models from Hugging Face:
 ```bash
 # apply with the default values
 oc process -n opendatahub -o yaml vllm-cuda-runtime-template | oc apply -f -
 ```
 
-Deploy the following Inference Service
+Deploy the following InferenceService
 ```yaml
 oc apply -f - <<EOF
 apiVersion: serving.kserve.io/v1beta1
@@ -30,7 +30,7 @@ spec:
       args:
         - --model_name=t5
         - --model_id=google/t5-small-lm-adapt
-        - --backend=huggingface  
+        - --backend=huggingface
     storageUri: "hf://google/t5-small-lm-adapt"
 EOF
 ```

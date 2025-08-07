@@ -10,7 +10,7 @@ For each Accelerator branch, navigate to its respective sub-directory:
 
 For this tutorial we will be using the `openshift-user-workload-monitoring` namespace to configure Grafana and deploy the Dashboard.
 
-Execute the Grafana operator using the [deploy-grafana-operator.yaml](../common-assets/deploy-grafana-operator.yaml).
+Deploy the Grafana Operator using [deploy-grafana-operator.yaml](../common-assets/deploy-grafana-operator.yaml).
 ```bash
 oc apply -f ../common-assets/deploy-grafana-operator.yaml
 
@@ -41,21 +41,21 @@ oc get grafana -n openshift-user-workload-monitoring
 # if it failed, add -oyaml to the previous command for more detailed messages
 ```
 
-Now, we need to configure the service account so Grafana can query the `Thanos` endpoint.
+Now configure the service account so Grafana can query the `Thanos` endpoint.
 To do that, apply the content from [service account role binding](../common-assets/sa-rb.yaml)
 
 This will:
 - create the service account `grafana-sa`
   - For newer version, the grafana-sa service account is already created.
-- Create the sercret token for the service account
+- Create the secret token for the service account
 - assign the `cluster-monitoring-view` to the service account just created.
 
 ```bash
 oc apply -f ../common-assets/sa-rb.yaml
 ```
 
-Now, let's get the `serviceAccount` token and store in a secret:
-```Bash
+Now, get the `serviceAccount` token and store it in a secret:
+```bash
 SECRET_NAME=$(oc -n openshift-user-workload-monitoring describe sa grafana-sa | awk '/Tokens/{ print $2 }')
 # echo $SECRET_NAME
 # grafana-sa-token-zsx9b
@@ -82,7 +82,7 @@ oc get secret credentials -oyaml -n openshift-user-workload-monitoring
 ```
 
 
-Now we need to expose it. By default the service name should be `grafana-service`, confirm with the following command:
+Now expose the service. By default the service name should be `grafana-service`. Confirm with:
 ```bash
 oc get svc -n openshift-user-workload-monitoring | grep grafana
 ```

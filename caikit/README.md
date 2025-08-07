@@ -1,12 +1,11 @@
 # Deploying and Using InferenceService
 
-This guide provides the steps to deploy an InferenceService and make an inference request using the deployed service  
-Using the CaiKit Serving Runtime to deploy the `flan-t5-small-caikit` model for simple
+This guide shows how to deploy an InferenceService and make a request using the Caikit Serving Runtime with the `flan-t5-small-caikit` model.
 
 ## Prerequisites
 
-- Running OpenShift Container Platform (OCP) Cluster 
-  - GPU is not needed, as it is a very basic model.
+- Running OpenShift Container Platform (OCP) cluster
+  - GPU is not needed for this model
 - `oc` or `kubectl` command line tools to interact with the OCP Server
 - `Podman` or `Docker` Container Engine
 
@@ -38,7 +37,7 @@ Using the CaiKit Serving Runtime to deploy the `flan-t5-small-caikit` model for 
 
 ## Making an Inference Request
 
-Once the InferenceService is deployed and ready, you can make an inference request using `curl`.
+Once the InferenceService is ready, you can make an inference request using `curl`.
 
 1. **Create a request file (`request-example.txt`):**
 
@@ -53,4 +52,4 @@ Once the InferenceService is deployed and ready, you can make an inference reque
     sh request-example.txt
     ```
 
-This will send a POST request to the deployed InferenceService and return the inference result.
+This sends a POST request to the deployed InferenceService and returns the inference result.
