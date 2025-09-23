@@ -25,3 +25,4 @@ for i in $(seq 1 ${X:-1}); do
     sleep 0.5 # sleep for 0.5 seconds
     # curl --silent --location --fail --show-error --insecure https://${HOST_URL}${HOST_PATH}/infer -d  @${COMMON_MANIFESTS_DIR}/input-onnx.json
 done
+

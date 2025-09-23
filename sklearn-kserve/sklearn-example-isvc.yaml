@@ -46,7 +46,7 @@ kind: "InferenceService"
 metadata:
   name: "sklearn-iris-instance-2"
   annotations:
-    serving.kserve.io/deploymentMode: "Serverless"
+    serving.kserve.io/deploymentMode: "RawDeployment"
 spec:
   predictor:
     model:

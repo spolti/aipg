@@ -1,4 +1,4 @@
-## AI Playground
+just## AI Playground
 
 A collection of practical examples for Red Hat OpenShift AI / Open Data Hub (ODH): model serving with KServe and ModelMesh, storage helpers, metrics dashboards, and GPU testing.
 

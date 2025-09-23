@@ -1,5 +1,5 @@
 {
-  "model_name": "onnx",
+  "model_name": "mnist-auth",
   "inputs": [
     {
       "name": "Input3",
