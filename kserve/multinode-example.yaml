@@ -1,0 +1,39 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  annotations:
+    serving.kserve.io/autoscalerClass: "none"
+    serving.kserve.io/deploymentMode: "RawDeployment"
+  name: granite-oci
+spec:
+  predictor:
+    model:
+      # env:
+      # - name: VLLM_LOGGING_LEVEL
+      #   value: DEBUG
+      modelFormat:
+        name: vLLM
+      runtime: vllm-multinode-runtime
+      # storageUri: oci://quay.io/spolti/granite-3.1-8b:instruct
+      storageUri: oci://quay.io/redhat-ai-services/modelcar-catalog:qwen2.5-7b-instruct
+      args:
+      - --served-model-name=Qwen/Qwen2.5-7B-Instruct"
+      - --gpu-memory-utilization=0.90
+      - --dtype=float16
+      # args:
+      #   - '--max-model-len=20000'
+      #   - '--dtype=float16'
+      #   - '--model=/mnt/models'
+      #   - '--tensor-parallel-size=1'
+      #   - '--uvicorn-log-level=debug'
+      #   - '--served-model-name=granite318b'
+      resources:
+        limits:
+          cpu: "4"
+          memory: 12Gi
+          nvidia.com/gpu: "1"
+        requests:
+          cpu: "2"
+          memory: 8Gi
+          nvidia.com/gpu: "1"
+    workerSpec: {}

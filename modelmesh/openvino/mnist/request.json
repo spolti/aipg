@@ -1,5 +1,5 @@
 {
-  "model_name": "mnist-auth",
+  "model_name": "mnist-uri-custom-runtime",
   "inputs": [
     {
       "name": "Input3",
