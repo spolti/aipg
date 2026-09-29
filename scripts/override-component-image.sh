@@ -9,19 +9,22 @@
 #   ./hack/override-component-image.sh <component> <image>
 #
 # Components:
-#   kserve                quay.io/user/kserve-controller:tag
-#   odh-model-controller  quay.io/user/odh-model-controller:tag
+#   kserve                  quay.io/user/kserve-controller:tag
+#   odh-model-controller    quay.io/user/odh-model-controller:tag
+#   ai-gateway-controller   quay.io/user/odh-ai-gateway-controller:tag
 #
 # Examples:
 #   ./hack/override-component-image.sh kserve quay.io/spolti/kserve-controller:transformer
 #   ./hack/override-component-image.sh odh-model-controller quay.io/spolti/odh-model-controller:latest
+#   ./hack/override-component-image.sh ai-gateway-controller quay.io/spolti/odh-ai-gateway-controller:dev
 #
 # Prerequisites:
 #   - Logged into an OpenShift cluster with cluster-admin
 #   - ODH operator deployed via OLM in openshift-operators
-#   - Sibling repos cloned next to opendatahub-tests:
+#   - Sibling repos cloned next to this repository:
 #       ../kserve                (for kserve)
 #       ../odh-model-controller  (for odh-model-controller)
+#       ../ai-gateway-controller (for ai-gateway-controller)
 
 set -euo pipefail
 
@@ -35,21 +38,25 @@ STORAGE_CLASS="${STORAGE_CLASS:-gp3-csi}"
 declare -A PVC_NAMES=(
     [kserve]="kserve-manifests"
     [odh-model-controller]="modelcontroller-manifests"
+    [ai-gateway-controller]="aigatewaycontroller-manifests"
 )
 
 declare -A MOUNT_PATHS=(
     [kserve]="/opt/manifests/kserve"
     [odh-model-controller]="/opt/manifests/modelcontroller"
+    [ai-gateway-controller]="/opt/manifests/aigatewaycontroller"
 )
 
 declare -A PARAMS_FILES=(
     [kserve]="overlays/odh/params.env"
     [odh-model-controller]="base/params.env"
+    [ai-gateway-controller]="default/params.env"
 )
 
 declare -A PARAMS_KEYS=(
     [kserve]="kserve-controller"
     [odh-model-controller]="odh-model-controller"
+    [ai-gateway-controller]="ai-gateway-controller-image"
 )
 
 # ---------------------------------------------------------------------------
@@ -88,12 +95,12 @@ IMAGE="${2:-}"
 if [[ -z "${COMPONENT}" || -z "${IMAGE}" ]]; then
     echo "Usage: $0 <component> <image>"
     echo ""
-    echo "Components: kserve, odh-model-controller"
+    echo "Components: kserve, odh-model-controller, ai-gateway-controller"
     exit 1
 fi
 
 if [[ -z "${PVC_NAMES[${COMPONENT}]+x}" ]]; then
-    error "Unknown component '${COMPONENT}'. Supported: kserve, odh-model-controller"
+    error "Unknown component '${COMPONENT}'. Supported: kserve, odh-model-controller, ai-gateway-controller"
 fi
 
 PVC_NAME="${PVC_NAMES[${COMPONENT}]}"
@@ -123,6 +130,9 @@ case "${COMPONENT}" in
         ;;
     odh-model-controller)
         LOCAL_MANIFESTS="${REPO_ROOT}/odh-model-controller/config"
+        ;;
+    ai-gateway-controller)
+        LOCAL_MANIFESTS="${REPO_ROOT}/../ai-gateway-controller/config/self"
         ;;
 esac
 
@@ -246,6 +256,9 @@ case "${COMPONENT}" in
         ;;
     odh-model-controller)
         DEPLOY_NAME="odh-model-controller"
+        ;;
+    ai-gateway-controller)
+        DEPLOY_NAME="ai-gateway-controller"
         ;;
 esac
 
