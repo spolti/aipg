@@ -1,0 +1,13 @@
+# Must live in ai-tenants. Controller creates ai-tenant-<name> and MaasTenantConfig.
+apiVersion: maas.opendatahub.io/v1alpha1
+kind: AITenant
+metadata:
+  name: ""
+  namespace: ai-tenants
+spec:
+  gateway:
+    name: ""
+  # oidc:
+  #   issuerUrl: ""
+  #   clientId: ""
+  #   ttl: 300

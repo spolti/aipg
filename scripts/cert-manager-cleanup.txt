@@ -1,0 +1,21 @@
+cleanup cert-manager 
+
+kubectl delete -f https://github.com/cert-manager/cert-manager/releases/download/v1.18.2/cert-manager.yaml
+
+kubectl get namespace cert-manager 2>&1 || echo "✅ cert-manager namespace confirmed deleted"
+kubectl get crds | grep cert-manager || echo "✅ All cert-manager CRDs confirmed deleted"
+kubectl get mutatingwebhookconfigurations,validatingwebhookconfigurations | grep cert-manager || echo "✅ All cert-manager webhook configurations confirmed deleted"
+
+
+
+kubectl get csv -A | grep cert-manager || echo "No ClusterServiceVersion found"
+
+
+kubectl get all -n openshift-operators 2>/dev/null | grep cert-manager || echo "No cert-manager-operator resources found in openshift-operators"
+
+kubectl api-resources | grep cert-manager || echo "No cert-manager API resources found"
+kubectl get deployment -A | grep cert-manager-operator || echo "No cert-manager-operator deployment found"
+
+
+
+

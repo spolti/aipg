@@ -1,0 +1,25 @@
+# OpenShift Route for the tenant Gateway (only if one was not auto-provisioned).
+# destinationCACertificate: signing-cabundle from openshift-service-ca.
+# to.name is typically <tenant>-openshift-default
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: ""
+  namespace: openshift-ingress
+  labels:
+    app.kubernetes.io/name: maas
+    app.kubernetes.io/instance: ""
+    gateway.networking.k8s.io/gateway-name: ""
+spec:
+  host: ""
+  to:
+    kind: Service
+    name: ""
+    weight: 100
+  port:
+    targetPort: https
+  tls:
+    termination: reencrypt
+    insecureEdgeTerminationPolicy: Redirect
+    destinationCACertificate: |
+  wildcardPolicy: None

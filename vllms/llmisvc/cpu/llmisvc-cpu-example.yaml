@@ -1,0 +1,27 @@
+# LLMInferenceService (CPU). Apply in the model/provider namespace.
+# Point router.gateway.refs at the tenant Gateway (openshift-ingress).
+apiVersion: serving.kserve.io/v1alpha1
+kind: LLMInferenceService
+metadata:
+  name: ""
+  namespace: ""
+spec:
+  model:
+    uri: ""
+    name: ""
+  replicas: 1
+  router:
+    gateway:
+      refs:
+        - name: ""
+          namespace: openshift-ingress
+    route: {}
+  template:
+    containers:
+      - name: main
+        image: ""
+        args: []
+        env: []
+        resources:
+          limits: {}
+          requests: {}

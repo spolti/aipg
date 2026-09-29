@@ -1,0 +1,26 @@
+#!/bin/bash
+
+IMGS=$1
+BINARIES=$2
+CVE=$3
+
+for img in ${IMGS} ; do
+    podman pull --arch x86_64 "${img}"
+    pushd $(podman image mount "${img}") || exit
+    echo
+    echo "================ $img ================"
+    echo
+
+    for bin in ${BINARIES} ; do
+        GOVULNCHECK_CMD="govulncheck --mode binary --format openvex ${bin} | jq '.statements[] | select(.vulnerability.aliases[] | contains(\"${CVE}\"))'"
+        echo "{code:bash}"
+        echo "${GOVULNCHECK_CMD}"
+        echo "{code}"
+        echo "{code:json}"
+        eval "${GOVULNCHECK_CMD}"
+        echo "{code}"
+    done
+
+    popd || exit
+    podman image unmount "${img}"
+done

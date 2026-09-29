@@ -1,0 +1,14 @@
+# Gateway infrastructure parameters. Apply in openshift-ingress.
+# serving-cert-secret-name must match the Gateway TLS secret.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ""
+  namespace: openshift-ingress
+data:
+  service: |
+    metadata:
+      annotations:
+        service.beta.openshift.io/serving-cert-secret-name: ""
+    spec:
+      type: ClusterIP

@@ -1,0 +1,17 @@
+# Apply in the tenant namespace (ai-tenant-<tenant>), which must have MaasTenantConfig.
+apiVersion: maas.opendatahub.io/v1alpha1
+kind: MaaSSubscription
+metadata:
+  name: ""
+  namespace: ""
+spec:
+  owner:
+    groups:
+      - name: system:authenticated
+    users: []
+  modelRefs:
+    - name: ""
+      namespace: ""
+      tokenRateLimits:
+        - limit: 1000
+          window: 1m
