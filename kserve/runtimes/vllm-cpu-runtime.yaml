@@ -1,8 +1,7 @@
-# CPU-only single-node LLMInferenceService for Open Data Hub / OpenShift AI.
-# ServingRuntime + LLMInferenceService in one apply.
+# Namespaced ServingRuntime converted from upstream KServe ClusterServingRuntime
+# config/runtimes/kserve-vllmserver.yaml, using the CPU image.
 #
-#   oc new-project llmisvc-cpu
-#   oc apply -f llmisvc-cpu-example.yaml
+#   oc apply -f vllm-cpu-runtime.yaml
 apiVersion: serving.kserve.io/v1alpha1
 kind: ServingRuntime
 metadata:
@@ -27,16 +26,3 @@ spec:
           value: /tmp
         - name: VLLM_CPU_KVCACHE_SPACE
           value: "1"
----
-apiVersion: serving.kserve.io/v1alpha2
-kind: LLMInferenceService
-metadata:
-  name: facebook-opt-125m-single
-spec:
-  runtime: vllm-cpu-runtime
-  model:
-    uri: hf://facebook/opt-125m
-    name: facebook/opt-125m
-  replicas: 1
-  router:
-    route: {}
