@@ -2,16 +2,16 @@
 apiVersion: maas.opendatahub.io/v1alpha1
 kind: MaaSSubscription
 metadata:
-  name: ""
-  namespace: ""
+  name: "facebook-opt-125m-subscription"
+  namespace: "models-as-a-service"
 spec:
   owner:
     groups:
       - name: system:authenticated
     users: []
   modelRefs:
-    - name: ""
-      namespace: ""
+    - name: "facebook-opt-125m-single"
+      namespace: "provider-llm"
       tokenRateLimits:
-        - limit: 1000
-          window: 1m
+        - limit: 5400
+          window: 10m

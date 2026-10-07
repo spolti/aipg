@@ -3,12 +3,13 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: ""
-  namespace: openshift-ingress
+  name: ${GATEWAY_OPTIONS_CONFIGMAP}
+  namespace: ${GATEWAY_NAMESPACE}
 data:
   service: |
     metadata:
       annotations:
-        service.beta.openshift.io/serving-cert-secret-name: ""
+        service.beta.openshift.io/serving-cert-secret-name: "${CERT_NAME}"
+    # remove this for ROSA clusters    
     spec:
       type: ClusterIP

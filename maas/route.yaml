@@ -1,25 +1,36 @@
-# OpenShift Route for the tenant Gateway (only if one was not auto-provisioned).
-# destinationCACertificate: signing-cabundle from openshift-service-ca.
-# to.name is typically <tenant>-openshift-default
+# OpenShift Route for the tenant Gateway.
+# Apply only if none was auto-provisioned:
+#   oc get route -n ${GATEWAY_NAMESPACE} -l gateway.networking.k8s.io/gateway-name=${TENANT_NAME}
+#
+# Expected values (same exports as gateway.yaml):
+#   TENANT_NAME=red-team
+#   GATEWAY_NAMESPACE=openshift-ingress
+#   GATEWAY_HOSTNAME=red-team-maas.<cluster-domain>
+#   GATEWAY_SERVICE_NAME=red-team-openshift-default
+#
+# Passthrough: the Gateway listener already terminates TLS with ${CERT_NAME}
+# (ROSA wildcard copy). The MaaS doc uses reencrypt + destinationCACertificate
+# from service-ca; that needs a *separate* serving-cert Secret, not ${CERT_NAME}.
+#
+#   envsubst < route.yaml | oc apply -f -
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: ""
-  namespace: openshift-ingress
+  name: ${TENANT_NAME}-gateway
+  namespace: ${GATEWAY_NAMESPACE}
   labels:
     app.kubernetes.io/name: maas
-    app.kubernetes.io/instance: ""
-    gateway.networking.k8s.io/gateway-name: ""
+    app.kubernetes.io/instance: ${TENANT_NAME}
+    gateway.networking.k8s.io/gateway-name: ${TENANT_NAME}
 spec:
-  host: ""
+  host: ${GATEWAY_HOSTNAME}
   to:
     kind: Service
-    name: ""
+    name: ${GATEWAY_SERVICE_NAME}
     weight: 100
   port:
     targetPort: https
   tls:
-    termination: reencrypt
+    termination: passthrough
     insecureEdgeTerminationPolicy: Redirect
-    destinationCACertificate: |
   wildcardPolicy: None

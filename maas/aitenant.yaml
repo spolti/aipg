@@ -2,12 +2,14 @@
 apiVersion: maas.opendatahub.io/v1alpha1
 kind: AITenant
 metadata:
-  name: ""
+  name: ${TENANT_NAME}
   namespace: ai-tenants
 spec:
   gateway:
-    name: ""
+    name: ${TENANT_NAME}
+  # Optional: configure an external OIDC provider for this tenant.
+  # Each tenant can use a different IdP realm/client. Omit to rely on OpenShift TokenReview only.
   # oidc:
-  #   issuerUrl: ""
-  #   clientId: ""
+  #   issuerUrl: "https://keycloak.example.com/realms/${TENANT_NAME}"
+  #   clientId: ${TENANT_NAME}-maas
   #   ttl: 300

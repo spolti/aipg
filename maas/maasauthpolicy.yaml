@@ -2,12 +2,12 @@
 apiVersion: maas.opendatahub.io/v1alpha1
 kind: MaaSAuthPolicy
 metadata:
-  name: ""
-  namespace: ""
+  name: "facebook-opt-125m-ap"
+  namespace: "models-as-a-service"
 spec:
   modelRefs:
-    - name: ""
-      namespace: ""
+    - name: "facebook-opt-125m-single"
+      namespace: "provider-llm"
   subjects:
     groups:
       - name: system:authenticated

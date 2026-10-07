@@ -25,6 +25,12 @@ spec:
     uri: hf://facebook/opt-125m
     name: facebook/opt-125m
   replicas: 1
+  router:
+    gateway:
+      refs:
+        - name: red-team
+          namespace: openshift-ingress
+    route: {}
   template:
     volumes:
       - name: chat-template
@@ -55,6 +61,10 @@ spec:
             value: /tmp
           - name: VLLM_CPU_KVCACHE_SPACE
             value: "1"
+        ports:
+          - name: http
+            containerPort: 8000
+            protocol: TCP
         resources:
           limits:
             cpu: "1"
@@ -62,3 +72,29 @@ spec:
           requests:
             cpu: "100m"
             memory: 8Gi
+        # Override the preset: periodSeconds 1 / timeoutSeconds 1 / HTTPS.
+        # This image serves HTTP on 8000; CPU + HF download is slow.
+        startupProbe:
+          httpGet:
+            path: /health
+            port: http
+            scheme: HTTP
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 60
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+            scheme: HTTP
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 6
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+            scheme: HTTP
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 5

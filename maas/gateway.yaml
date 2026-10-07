@@ -4,26 +4,25 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
-  name: ""
-  namespace: openshift-ingress
+  name: ${TENANT_NAME}
+  namespace: ${GATEWAY_NAMESPACE}
   annotations:
     opendatahub.io/managed: "false"
     security.opendatahub.io/authorino-tls-bootstrap: "true"
   labels:
     app.kubernetes.io/name: maas
-    app.kubernetes.io/instance: ""
+    app.kubernetes.io/instance: ${TENANT_NAME}
     app.kubernetes.io/component: gateway
-    opendatahub.io/managed: "false"
 spec:
   gatewayClassName: openshift-default
   infrastructure:
     parametersRef:
       group: ""
       kind: ConfigMap
-      name: ""
+      name: ${GATEWAY_OPTIONS_CONFIGMAP}
   listeners:
     - name: https
-      hostname: ""
+      hostname: ${GATEWAY_HOSTNAME}
       port: 443
       protocol: HTTPS
       allowedRoutes:
@@ -31,10 +30,10 @@ spec:
           from: Selector
           selector:
             matchLabels:
-              maas.opendatahub.io/gateway-access-TENANT: "true"
+              ${GATEWAY_ACCESS_LABEL}: "true"
       tls:
         mode: Terminate
         certificateRefs:
           - group: ""
             kind: Secret
-            name: ""
+            name: ${CERT_NAME}
